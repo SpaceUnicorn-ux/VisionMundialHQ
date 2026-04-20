@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Vision Mundial HQ</title>
+  <link rel="stylesheet" href="style.css" />
+  
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+</head>
+
+<body class="splash-active">
+  
+    <!-- SPLASH SCREEN -->
+  <div class="splash" id="splash" aria-hidden="false">
+    <div class="rings" aria-hidden="true">
+      <div class="ring r1"></div>
+      <div class="ring r2"></div>
+      <div class="ring r3"></div>
+      <div class="ring r4"></div>
+      <div class="ring r5"></div>
+    </div>
+
+    <div class="splash-center">
+      <div class="logo-stack" aria-label="Animación de bienvenida 2026">
+        <div class="number-group">
+          <span class="shape two-main" data-text="2">2</span>
+          <span class="shape six-main" data-text="6">6</span>
+        </div>
+      </div>
+
+      <div class="brand">FIFA WORLD CUP 26</div>
+      <div class="loader" aria-hidden="true"><span></span></div>
+    </div>
+  </div>
+
+  <header class="main-header" id="header-top">
+    <h1 class="bold-title">VISION MUNDIAL HQ</h1>
+  </header>
+
+  <main class="content-container">
+
+    <section id="inicio" class="page active">
+      <div class="video-container">
+        <div class="responsive-iframe">
+<iframe
+  src="https://www.youtube.com/embed/RDtdVQgB9ME"
+  title="Video de presentación"
+  frameborder="0"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+        </div>
+        <p class="video-desc">Video de presentación</p>
+      </div>
+
+      <button class="primary-button" onclick="openVR()">COPA DEL MUNDO VR</button>
+      <button class="secondary-button" type="button" onclick="goToMiniGames()">IR A MINIJUEGOS HQ</button>
+
+      <div class="news-section">
+        <div class="news-section-head">
+          <div>
+            <h2 class="section-title">Noticias HQ</h2>
+            <p class="subtitle">Cobertura premium del Mundial 2026, sedes, boletos y selecciones.</p>
+          </div>
+        </div>
+
+        <div class="news-container">
+          <button class="news-card news-card-featured" type="button" onclick="goToNewsHub()">
+            <img
+              class="news-cover"
+              src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80"
+              alt="Noticias del Mundial 2026">
+            <div class="news-content">
+              <span class="news-source">Noticias HQ</span>
+              <h3 class="news-title-card">Portal completo del Mundial 2026</h3>
+              <p class="news-text">Entra a tu portal editorial con noticias, sedes, calendario, estadísticas y vista detallada.</p>
+            </div>
+            <div class="news-arrow">Abrir</div>
+          </button>
+
+          <button class="news-card" type="button" onclick="goToNewsHub()">
+            <img
+              class="news-thumb"
+              src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=800&q=80"
+              alt="Estadio Azteca">
+            <div class="news-content">
+              <span class="news-source">Sedes</span>
+              <p class="news-text">Consulta las sedes principales, el Azteca y más detalles del Mundial.</p>
+            </div>
+            <div class="news-arrow">Ver</div>
+          </button>
+
+          <button class="news-card" type="button" onclick="goToNewsHub()">
+            <img
+              class="news-thumb"
+              src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80"
+              alt="Boletos del Mundial">
+            <div class="news-content">
+              <span class="news-source">Boletos</span>
+              <p class="news-text">Revisa la parte de boletos, calendario y cobertura premium en tu sección de noticias.</p>
+            </div>
+            <div class="news-arrow">Ver</div>
+          </button>
+        </div>
+
+        <button class="secondary-button news-hub-button" type="button" onclick="goToNewsHub()">
+          IR A NOTICIAS HQ
+        </button>
+      </div>
+    </section>
+
+<section id="videos" class="page">
+  <div class="section-head">
+    <h2 class="section-title">Videos</h2>
+    <p class="subtitle">Reproducción con filtros.</p>
+  </div>
+
+  <div class="video-player-card">
+<video
+  id="local-video"
+  class="local-video"
+  controls
+  playsinline
+  preload="metadata"
+  poster="imagenes/video1-poster.jpg">
+  <source src="videos/video1.mp4" type="video/mp4" />
+  Tu navegador no soporta video HTML5.
+</video>
+
+    <div class="filter-bar">
+      <button class="chip" onclick="applyVideoFilter('none')">Normal</button>
+      <button class="chip" onclick="applyVideoFilter('blur(4px)')">Desenfoque</button>
+      <button class="chip" onclick="applyVideoFilter('saturate(250%) contrast(120%)')">Alta Saturación</button>
+      <button class="chip" onclick="applyVideoFilter('contrast(75%) brightness(115%) saturate(60%)')">Pasteles</button>
+      <button class="chip" onclick="applyVideoFilter('hue-rotate(180deg) saturate(300%) contrast(150%)')">Cámara Térmica</button>
+      <button class="chip" onclick="applyVideoFilter('hue-rotate(280deg) saturate(250%) brightness(90%)')">Cyberpunk</button>
+    </div>
+  </div>
+
+  <div class="video-grid" id="video-grid">
+    <button class="video-tile" type="button" onclick="loadLocalVideo('videos/video1.mp4', 'Video 1')">
+      <div class="thumb solid-thumb"></div>
+      <div class="tile-meta">
+        <div class="tile-title">Video 1</div>
+        <div class="tile-sub">MP4 local</div>
+      </div>
+    </button>
+
+    <button class="video-tile" type="button" onclick="loadLocalVideo('videos/video2.mp4', 'Video 2')">
+      <div class="thumb solid-thumb"></div>
+      <div class="tile-meta">
+        <div class="tile-title">Video 2</div>
+        <div class="tile-sub">MP4 local</div>
+      </div>
+    </button>
+
+    <a class="video-tile link-tile" href="https://www.youtube.com/watch?v=m1tIA4JnOOE" target="_blank" rel="noopener">
+      <div class="thumb solid-thumb"></div>
+      <div class="tile-meta">
+        <div class="tile-title">Video YouTube</div>
+        <div class="tile-sub">Abrir en YouTube</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section id="camara" class="page">
+  <div class="section-head">
+    <h2 class="section-title">Cámara AR</h2>
+    <p class="subtitle">Apunta tu cámara al marcador.</p>
+  </div>
+
+  <div class="ar-container">
+    <iframe
+  id="camera-iframe"
+  src=""
+  allow="camera; microphone; autoplay; fullscreen; xr-spatial-tracking"
+  allowfullscreen
+  style="width: 100%; height: 100%; border: none;">
+</iframe>
+  </div>
+
+  <div class="filter-bar">
+    <button class="chip" onclick="applyARFilter('none')">Normal</button>
+    <button class="chip" onclick="applyARFilter('blur(4px)')">Desenfoque</button>
+    <button class="chip" onclick="applyARFilter('saturate(250%) contrast(120%)')">Alta Saturación</button>
+    <button class="chip" onclick="applyARFilter('contrast(75%) brightness(115%) saturate(60%)')">Pasteles</button>
+    <button class="chip" onclick="applyARFilter('hue-rotate(180deg) saturate(300%) contrast(150%)')">Cámara Térmica</button>
+    <button class="chip" onclick="applyARFilter('hue-rotate(280deg) saturate(250%) brightness(90%)')">Cyberpunk</button>
+    <button class="chip" onclick="captureARPhoto()">Tomar foto</button>
+  </div>
+</section>
+
+<section id="archivero" class="page">
+  <div class="archive-hero">
+    <div class="archive-hero-copy">
+      <span class="archive-kicker">ARCHIVO OFICIAL</span>
+      <h2 class="archive-main-title">Centro de selecciones · Mundial 2026</h2>
+      <p class="archive-main-text">
+        Explora fichas visuales, modelos AR, historia mundialista, perfil táctico,
+        datos destacados y archivo expandido de cada selección.
+      </p>
+    </div>
+
+    <button
+      class="gallery-btn gallery-btn-top"
+      type="button"
+      onclick="openTab('galeria', document.querySelector('.menu-item[data-tab=galeria]'))"
+      title="Galería">
+      GALERÍA
+    </button>
+  </div>
+
+  <div class="live-stats-container archive-stats-card">
+    <div class="archive-stats-head">
+      <h3>En vivo · Archivo Mundial 2026</h3>
+      <span class="archive-badge-live">LIVE</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <span class="stat-label">Boletos vendidos</span>
+        <span class="live-stat" id="stat-tickets">1542107</span>
+      </div>
+
+      <div class="stat-box">
+        <span class="stat-label">Usuarios conectados</span>
+        <span class="live-stat stat-accent" id="stat-users">45428</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="archive-intro-grid">
+    <div class="archive-intro-card">
+      <h3>¿Qué encontrarás?</h3>
+      <p>
+        Una mini enciclopedia visual de cada selección vinculada con el Mundial 2026,
+        preparada para complementar lo que se ve en AR.
+      </p>
+    </div>
+
+    <div class="archive-intro-card">
+      <h3>Contenido</h3>
+      <p>
+        Perfil del país, sedes relacionadas, narrativa visual, modelo asociado,
+        historia mundialista, estilo de juego y elementos coleccionables.
+      </p>
+    </div>
+  </div>
+
+  <div class="team-list-vertical archive-country-grid">
+    <button class="team-long-btn archive-country-btn mexico" type="button" onclick="openCountryArchive('mx')">
+      <span class="flag-circle">MX</span>
+      <span class="team-info-wrap">
+        <span class="team-name">México</span>
+        <span class="team-sub">Sede, historia y archivo AR</span>
+      </span>
+      <span class="team-arrow">→</span>
+    </button>
+
+    <button class="team-long-btn archive-country-btn japon" type="button" onclick="openCountryArchive('jp')">
+      <span class="flag-circle">JP</span>
+      <span class="team-info-wrap">
+        <span class="team-name">Japón</span>
+        <span class="team-sub">Disciplina, velocidad y proyección</span>
+      </span>
+      <span class="team-arrow">→</span>
+    </button>
+
+    <button class="team-long-btn archive-country-btn sudafrica" type="button" onclick="openCountryArchive('sa')">
+      <span class="flag-circle">SA</span>
+      <span class="team-info-wrap">
+        <span class="team-name">Sudáfrica</span>
+        <span class="team-sub">Legado africano y memoria mundialista</span>
+      </span>
+      <span class="team-arrow">→</span>
+    </button>
+
+    <button class="team-long-btn archive-country-btn tunez" type="button" onclick="openCountryArchive('tn')">
+      <span class="flag-circle">TN</span>
+      <span class="team-info-wrap">
+        <span class="team-name">Túnez</span>
+        <span class="team-sub">Resistencia, orden y carácter competitivo</span>
+      </span>
+      <span class="team-arrow">→</span>
+    </button>
+
+    <button class="team-long-btn archive-country-btn suecia" type="button" onclick="openCountryArchive('se')">
+      <span class="flag-circle">SE</span>
+      <span class="team-info-wrap">
+        <span class="team-name">Suecia</span>
+        <span class="team-sub">Tradición, fortaleza física y legado</span>
+      </span>
+      <span class="team-arrow">→</span>
+    </button>
+
+    <button class="team-long-btn archive-country-btn corea" type="button" onclick="openCountryArchive('kr')">
+      <span class="flag-circle">KR</span>
+      <span class="team-info-wrap">
+        <span class="team-name">Corea del Sur</span>
+        <span class="team-sub">Intensidad, presión y memoria de 2002</span>
+      </span>
+      <span class="team-arrow">→</span>
+    </button>
+  </div>
+</section>
+
+<section id="galeria" class="page">
+  <div class="detail-header">
+    <button class="back-btn" onclick="openTab('archivero', document.querySelector('.menu-item[data-tab=archivero]'))">REGRESAR</button>
+    <h2>Galería</h2>
+  </div>
+
+  <p id="gallery-empty" class="muted-center">Sin capturas aún.</p>
+  <div id="gallery-grid" class="gallery-grid"></div>
+</section>
+
+<section id="detalle-pais" class="page">
+  <div class="detail-header archive-detail-top">
+    <button class="back-btn" onclick="openTab('archivero', document.querySelector('.menu-item[data-tab=archivero]'))">
+      REGRESAR
+    </button>
+    <h2 id="country-detail-title">Archivo del país</h2>
+  </div>
+
+  <div id="country-detail-content" class="country-detail-shell"></div>
+</section>
+
+<section id="trivia" class="page">
+  <div class="quiz-app-shell">
+    <div class="quiz-hero">
+      <div class="quiz-hero-badge">MODO QUIZ • MUNDIAL 2026</div>
+      <h2 class="quiz-hero-title">Trivia Profesional</h2>
+      <p class="quiz-hero-subtitle">
+        Responde rápido, encadena rachas, usa comodines y sube en el ranking.
+      </p>
+    </div>
+
+    <div id="quiz-home" class="quiz-home-card">
+      <div class="quiz-home-top">
+        <div class="quiz-profile-mini">
+          <div class="quiz-avatar-mini">⚽</div>
+          <div>
+            <div class="quiz-mini-label">Jugador</div>
+            <div class="quiz-mini-name">Vision Mundial HQ</div>
+          </div>
+        </div>
+
+        <div class="quiz-wallet">
+          <div class="quiz-wallet-pill">🏆 <span id="quiz-home-best">0</span></div>
+          <div class="quiz-wallet-pill">🪙 <span id="quiz-home-coins">0</span></div>
+        </div>
+      </div>
+
+      <div class="quiz-mode-grid">
+        <button class="quiz-mode-card active" type="button" data-amount="10">
+          <span class="quiz-mode-title">Rápido</span>
+          <span class="quiz-mode-desc">10 preguntas</span>
+        </button>
+
+        <button class="quiz-mode-card" type="button" data-amount="15">
+          <span class="quiz-mode-title">Clásico</span>
+          <span class="quiz-mode-desc">15 preguntas</span>
+        </button>
+
+        <button class="quiz-mode-card" type="button" data-amount="20">
+          <span class="quiz-mode-title">Pro</span>
+          <span class="quiz-mode-desc">20 preguntas</span>
+        </button>
+      </div>
+
+      <div class="quiz-home-stats">
+        <div class="quiz-stat-card">
+          <span class="quiz-stat-kicker">Modo</span>
+          <strong id="quiz-home-mode-label">10 preguntas</strong>
+        </div>
+        <div class="quiz-stat-card">
+          <span class="quiz-stat-kicker">Tiempo por pregunta</span>
+          <strong>18 segundos</strong>
+        </div>
+        <div class="quiz-stat-card">
+          <span class="quiz-stat-kicker">Comodines</span>
+          <strong>50/50 · +10s · Saltar</strong>
+        </div>
+      </div>
+
+      <div class="quiz-home-actions">
+        <button id="quiz-start-btn" class="primary-button quiz-start-btn" type="button">
+          JUGAR AHORA
+        </button>
+      </div>
+    </div>
+
+    <div id="quiz-stage" class="quiz-stage hidden">
+      <div class="quiz-stage-top">
+        <div class="quiz-stage-left">
+          <div class="quiz-badge-soft">Pregunta <span id="quiz-current-number">1</span>/<span id="quiz-total-number">10</span></div>
+          <div class="quiz-badge-soft accent">Puntos <span id="quiz-score-value">0</span></div>
+        </div>
+
+        <div class="quiz-stage-right">
+          <div class="quiz-badge-soft fire">🔥 Racha <span id="quiz-streak-value">0</span></div>
+          <div class="quiz-badge-soft gold">🪙 <span id="quiz-coins-value">0</span></div>
+        </div>
+      </div>
+
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-track">
+          <div id="quiz-progress-bar" class="quiz-progress-bar"></div>
+        </div>
+
+        <div class="quiz-timer-wrap">
+          <span id="quiz-timer-text">18s</span>
+        </div>
+      </div>
+
+      <div class="quiz-question-card">
+        <div class="quiz-question-meta">
+          <span id="quiz-category" class="quiz-category-chip">Historia</span>
+          <span id="quiz-difficulty" class="quiz-difficulty-chip">Media</span>
+        </div>
+
+        <h3 id="quiz-question-text" class="quiz-question-main">Cargando pregunta...</h3>
+        <p id="quiz-question-note" class="quiz-question-note">Selecciona una respuesta.</p>
+
+        <div id="quiz-options" class="quiz-options-grid"></div>
+      </div>
+
+      <div class="quiz-powerups">
+        <button id="lifeline-5050" class="quiz-tool-btn" type="button">50/50</button>
+        <button id="lifeline-time" class="quiz-tool-btn" type="button">+10s</button>
+        <button id="lifeline-skip" class="quiz-tool-btn" type="button">Saltar</button>
+      </div>
+
+      <div id="quiz-feedback" class="quiz-feedback-pro" aria-live="polite"></div>
+
+      <div class="quiz-stage-actions">
+        <button id="quiz-next-btn" class="primary-button" type="button" disabled>SIGUIENTE</button>
+      </div>
+    </div>
+
+    <div id="quiz-finish" class="quiz-finish-card hidden">
+      <div class="quiz-finish-top">
+        <div class="quiz-finish-badge">RESULTADO FINAL</div>
+        <h3 id="quiz-finish-title">¡Gran partida!</h3>
+        <p id="quiz-finish-subtitle">Tu rendimiento quedó registrado.</p>
+      </div>
+
+      <div class="quiz-finish-score">
+        <div class="quiz-finish-score-circle">
+          <span id="quiz-final-score">0</span>
+          <small>pts</small>
+        </div>
+      </div>
+
+      <div class="quiz-finish-grid">
+        <div class="quiz-stat-card">
+          <span class="quiz-stat-kicker">Aciertos</span>
+          <strong id="quiz-final-correct">0</strong>
+        </div>
+        <div class="quiz-stat-card">
+          <span class="quiz-stat-kicker">Precisión</span>
+          <strong id="quiz-final-accuracy">0%</strong>
+        </div>
+        <div class="quiz-stat-card">
+          <span class="quiz-stat-kicker">Mejor racha</span>
+          <strong id="quiz-final-best-streak">0</strong>
+        </div>
+        <div class="quiz-stat-card">
+          <span class="quiz-stat-kicker">Rango</span>
+          <strong id="quiz-final-rank">Fan</strong>
+        </div>
+      </div>
+
+      <div class="quiz-reward-banner">
+        <span>🎁 Recompensa desbloqueada:</span>
+        <strong id="quiz-reward-text">+0 monedas</strong>
+      </div>
+
+      <div class="quiz-finish-actions">
+        <button id="quiz-restart-btn" class="primary-button" type="button">JUGAR DE NUEVO</button>
+      </div>
+    </div>
+  </div>
+</section>
+  </main>
+
+<nav class="bottom-menu" aria-label="Navegación inferior">
+    <button class="menu-item active" data-tab="inicio" onclick="openTab('inicio', this)">INICIO</button>
+    <button class="menu-item" data-tab="videos" onclick="openTab('videos', this)">VIDEOS</button>
+    <button class="menu-item" data-tab="camara" onclick="openTab('camara', this)">CAMARA</button>
+    <button class="menu-item" data-tab="trivia" onclick="openTab('trivia', this)">TRIVIA</button>
+    <button class="menu-item" type="button" onclick="goToMiniGames()">MINIJUEGOS</button>
+    <button class="menu-item" data-tab="archivero" onclick="openTab('archivero', this)">ARCHIVO</button>
+    <button class="menu-item" data-tab="galeria" onclick="openTab('galeria', this)">GALERIA</button>
+</nav>
+
+<div id="modal-vr" class="modal" role="dialog" aria-modal="true" aria-label="Trofeo Mundial VR">
+    <div class="modal-content">
+      <button class="close-vr" onclick="closeVR()" aria-label="Cerrar">X</button>
+      <h2 class="modal-title">TROFEO MUNDIAL</h2>
+      
+      <model-viewer 
+        src="modelos/mimikyu.glb" 
+        alt="Modelo 3D del Trofeo" 
+        camera-controls 
+        auto-rotate 
+        shadow-intensity="1"
+        style="width: 100%; height: 350px; border-radius: 15px; background-color: #0b0f14;">
+      </model-viewer>
+      
+    </div>
+  </div>
+
+  <div id="modal-video" class="modal" role="dialog" aria-modal="true" aria-label="Reproductor de video">
+    <div class="modal-content">
+      <button class="close-vr" onclick="closeVideoModal()" aria-label="Cerrar">X</button>
+      <h2 class="modal-title" id="video-modal-title">VIDEO</h2>
+      <div class="responsive-iframe">
+        <iframe
+  id="video-modal-iframe"
+  src=""
+  title="Video"
+  frameborder="0"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Escaner AR</title>
+
+<script>
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(() => {
+      console.log("Permiso de cámara concedido");
+    })
+    .catch((err) => {
+      alert("Debes permitir la cámara para usar AR");
+      console.error(err);
+    });
+</script>
+
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent !important;
+      font-family: sans-serif;
+      width: 100%;
+      height: 100%;
+    }
+
+    #loading-ar {
+      position: fixed;
+      inset: 0;
+      background: #0b0f14;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      font-size: 18px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #ar-ui-container {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 999;
+    }
+
+    .ar-dialog {
+      background: rgba(11, 15, 20, 0.9);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      border: 2px solid #26ccff;
+      display: none;
+      box-shadow: 0px 4px 15px rgba(38, 204, 255, 0.3);
+    }
+
+    .ar-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .ar-btn {
+      background: #26ccff;
+      color: #0b0f14;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .ar-btn:active {
+      transform: scale(0.95);
+      background: #1ab0e6;
+    }
+
+    a-scene {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading-ar">Abriendo cámara AR...</div>
+
+  <audio id="click-sound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+  <audio id="magic-sound" src="https://www.soundjay.com/misc/sounds/magic-chime-01.mp3" preload="auto"></audio>
+
+  <div id="ar-ui-container">
+    <div id="ar-dialog" class="ar-dialog">
+      <h3 id="dialog-title" style="margin: 0 0 5px 0; color: #26ccff;">Cargando...</h3>
+      <p id="dialog-text" style="margin: 0; font-size: 14px;">Información de la selección.</p>
+    </div>
+
+    <div class="ar-buttons">
+      <button class="ar-btn" id="btn-accion">Animar / Efecto</button>
+      <button class="ar-btn" id="btn-info">Ver 360° e Info</button>
+    </div>
+  </div>
+
+  <a-scene
+  embedded
+  arjs="sourceType: webcam; debugUIEnabled: false;"
+  vr-mode-ui="enabled: false"
+  renderer="antialias: true; alpha: true; precision: mediump;">
+
+    <a-assets timeout="10000">
+      <a-asset-item id="modelo-mx" src="modelos/balon.glb"></a-asset-item>
+      <a-asset-item id="modelo-jp" src="modelos/trofeo.glb"></a-asset-item>
+      <a-asset-item id="modelo-tn" src="modelos/jugador.glb"></a-asset-item>
+
+      <a-asset-item id="modelo-se" src="modelos/suecia.glb"></a-asset-item>
+<a-asset-item id="modelo-sa" src="modelos/sudafrica.glb"></a-asset-item>
+<a-asset-item id="modelo-kr" src="modelos/surcorea.glb"></a-asset-item>
+    </a-assets>
+
+    <a-marker type="pattern" url="marcadores/mexico.patt" id="marker-mx">
+      <a-entity
+        id="entidad-mx"
+        gltf-model="#modelo-mx"
+        scale="3 3 3"
+        position="0 0 0"
+        animation-mixer="clip: *; timeScale: 0">
+      </a-entity>
+    </a-marker>
+
+    <a-marker type="pattern" url="marcadores/japon.patt" id="marker-jp">
+      <a-entity
+        id="entidad-jp"
+        gltf-model="#modelo-jp"
+        scale="2 2 2"
+        position="0 0 0"
+        animation-mixer="clip: *; timeScale: 0">
+      </a-entity>
+    </a-marker>
+
+    <a-marker type="pattern" url="marcadores/tunez.patt" id="marker-tn">
+      <a-entity
+        id="entidad-tn"
+        gltf-model="#modelo-tn"
+        scale="0.05 0.05 0.05"
+        position="0 0 0"
+        animation-mixer="clip: *; timeScale: 0">
+      </a-entity>
+    </a-marker>
+
+    <a-marker type="pattern" url="marcadores/suecia.patt" id="marker-se">
+  <a-entity
+    id="entidad-se"
+    gltf-model="#modelo-se"
+    scale="1 1 1"
+    position="0 0 0"
+    animation-mixer="clip: *; timeScale: 0">
+  </a-entity>
+</a-marker>
+
+<a-marker type="pattern" url="marcadores/sudafrica.patt" id="marker-sa">
+  <a-entity
+    id="entidad-sa"
+    gltf-model="#modelo-sa"
+    scale="1 1 1"
+    position="0 0 0"
+    animation-mixer="clip: *; timeScale: 0">
+  </a-entity>
+</a-marker>
+
+<a-marker type="pattern" url="marcadores/surcorea.patt" id="marker-kr">
+  <a-entity
+    id="entidad-kr"
+    gltf-model="#modelo-kr"
+    scale="1 1 1"
+    position="0 0 0"
+    animation-mixer="clip: *; timeScale: 0">
+  </a-entity>
+</a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const uiContainer = document.getElementById("ar-ui-container");
+    const dialogBox = document.getElementById("ar-dialog");
+    const dialogTitle = document.getElementById("dialog-title");
+    const dialogText = document.getElementById("dialog-text");
+    const btnAccion = document.getElementById("btn-accion");
+    const btnInfo = document.getElementById("btn-info");
+    const clickSound = document.getElementById("click-sound");
+    const magicSound = document.getElementById("magic-sound");
+    const loading = document.getElementById("loading-ar");
+    const scene = document.querySelector("a-scene");
+
+let marcadorActivo = null;
+let entidadActiva = null;
+let rotacionActiva = false;
+let activeFilter = "none";
+
+    const datosSelecciones = {
+      "marker-mx": {
+        title: "México",
+        text: "Sede Mundialista por 3ra vez en la historia. ¡El Tri está listo para hacer historia en casa!",
+        entityId: "entidad-mx"
+      },
+      "marker-jp": {
+        title: "Japón",
+        text: "Los Samuráis Azules buscan superar los octavos de final con su disciplina y velocidad.",
+        entityId: "entidad-jp"
+      },
+      "marker-tn": {
+        title: "Túnez",
+        text: "Las Águilas de Cartago llegan con fuerza representando al continente africano.",
+        entityId: "entidad-tn"
+      },
+      "marker-se": {
+  title: "Suecia",
+  text: "Suecia es una selección histórica de Europa, recordada por su subcampeonato en el Mundial de 1958.",
+  entityId: "entidad-se"
+},
+"marker-sa": {
+  title: "Sudáfrica",
+  text: "Sudáfrica fue sede del Mundial 2010, el primero celebrado en el continente africano.",
+  entityId: "entidad-sa"
+},
+"marker-kr": {
+  title: "Corea del Sur",
+  text: "Corea del Sur sorprendió al mundo llegando a semifinales en el Mundial 2002 como anfitrión.",
+  entityId: "entidad-kr"
+}
+    };
+
+    function playSound(audioElement) {
+      if (!audioElement) return;
+      audioElement.currentTime = 0;
+      audioElement.play().catch(() => {});
+    }
+
+    function resetEntidad(entidad) {
+      if (!entidad) return;
+      entidad.removeAttribute("animation");
+      entidad.removeAttribute("animation__rotacion");
+      entidad.setAttribute("rotation", "0 0 0");
+      entidad.setAttribute("position", "0 0 0");
+      entidad.setAttribute("animation-mixer", "clip: *; timeScale: 0");
+      rotacionActiva = false;
+    }
+
+    if (scene) {
+      scene.addEventListener("loaded", () => {
+        console.log("A-Frame scene loaded");
+      });
+
+      scene.addEventListener("renderstart", () => {
+        console.log("AR render started");
+        if (loading) loading.style.display = "none";
+      });
+    }
+
+    window.addEventListener("load", () => {
+      console.log("AR cargado");
+    });
+
+    document.querySelectorAll("a-marker").forEach(marker => {
+      marker.addEventListener("markerFound", () => {
+        marcadorActivo = marker.id;
+
+        const datos = datosSelecciones[marcadorActivo];
+        if (!datos) return;
+
+        entidadActiva = document.getElementById(datos.entityId);
+        if (!entidadActiva) return;
+
+        uiContainer.style.display = "flex";
+        dialogBox.style.display = "none";
+        resetEntidad(entidadActiva);
+      });
+
+      marker.addEventListener("markerLost", () => {
+        if (marcadorActivo === marker.id) {
+          if (entidadActiva) {
+            resetEntidad(entidadActiva);
+          }
+
+          uiContainer.style.display = "none";
+          dialogBox.style.display = "none";
+          marcadorActivo = null;
+          entidadActiva = null;
+        }
+      });
+    });
+
+    btnAccion.addEventListener("click", () => {
+      playSound(clickSound);
+
+      if (!entidadActiva) return;
+
+      const mixerAttr = entidadActiva.getAttribute("animation-mixer");
+      const timeScaleActual = mixerAttr && typeof mixerAttr.timeScale !== "undefined"
+        ? Number(mixerAttr.timeScale)
+        : 0;
+
+      const nuevoTimeScale = timeScaleActual === 0 ? 1 : 0;
+      entidadActiva.setAttribute("animation-mixer", `clip: *; timeScale: ${nuevoTimeScale}`);
+
+      entidadActiva.removeAttribute("animation");
+      entidadActiva.setAttribute(
+        "animation",
+        "property: position; to: 0 0.5 0; dir: alternate; dur: 200; loop: 1"
+      );
+
+      if (rotacionActiva) {
+        entidadActiva.setAttribute(
+          "animation__rotacion",
+          "property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear"
+        );
+      }
+    });
+
+    btnInfo.addEventListener("click", () => {
+      playSound(magicSound);
+
+      if (!marcadorActivo || !entidadActiva) return;
+
+      const datos = datosSelecciones[marcadorActivo];
+      if (!datos) return;
+
+      dialogTitle.innerText = datos.title;
+      dialogText.innerText = datos.text;
+      dialogBox.style.display = "block";
+
+      entidadActiva.setAttribute(
+        "animation__rotacion",
+        "property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear"
+      );
+
+      rotacionActiva = true;
+    });
+
+function captureSceneImage() {
+  try {
+    const glCanvas = scene && scene.canvas ? scene.canvas : document.querySelector("canvas");
+    const video = document.querySelector("video");
+
+    if (!glCanvas || !video) {
+      parent.postMessage({ type: "AR_PHOTO_RESULT", image: null }, window.location.origin);
+      return;
+    }
+
+    const width = video.videoWidth || glCanvas.width || 1280;
+    const height = video.videoHeight || glCanvas.height || 720;
+
+    if (!width || !height) {
+      parent.postMessage({ type: "AR_PHOTO_RESULT", image: null }, window.location.origin);
+      return;
+    }
+
+    const outputCanvas = document.createElement("canvas");
+    outputCanvas.width = width;
+    outputCanvas.height = height;
+
+    const ctx = outputCanvas.getContext("2d");
+
+    // Aplicar el mismo filtro a la captura
+    ctx.filter = activeFilter || "none";
+
+    // Fondo de cámara
+    ctx.drawImage(video, 0, 0, width, height);
+
+    // Capa 3D encima
+    ctx.drawImage(glCanvas, 0, 0, width, height);
+
+    // Reset por limpieza
+    ctx.filter = "none";
+
+    const imageData = outputCanvas.toDataURL("image/png");
+    parent.postMessage({ type: "AR_PHOTO_RESULT", image: imageData }, window.location.origin);
+
+  } catch (error) {
+    console.error("Error al capturar foto AR:", error);
+    parent.postMessage({ type: "AR_PHOTO_RESULT", image: null }, window.location.origin);
+  }
+}
+
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+
+  const data = event.data;
+  if (!data) return;
+
+  if (data.type === "SET_AR_FILTER") {
+    activeFilter = data.filter || "none";
+    return;
+  }
+
+  if (data.type === "CAPTURE_AR_PHOTO") {
+    captureSceneImage();
+  }
+});
+  </script>
+</body>
+</html>
