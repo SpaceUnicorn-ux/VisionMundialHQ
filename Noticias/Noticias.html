@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Mundial HQ - Noticias</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js & Lucide -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --color-slate-950: #020617;
+            --color-slate-900: #0f172a;
+            --color-slate-800: #1e293b;
+            --color-emerald-500: #10b981;
+            --color-emerald-400: #34d399;
+            --color-gold: #fbbf24;
+            --color-white: #ffffff;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--color-slate-950);
+            color: var(--color-white);
+            overflow-x: hidden;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* Header & Nav */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+
+        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+        .logo h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; }
+
+        .nav-links { display: none; gap: 1.5rem; }
+        .nav-links a { 
+            text-decoration: none; 
+            color: rgba(255,255,255,0.7); 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+        .nav-links a:hover { color: var(--color-emerald-400); }
+
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+
+        /* Mobile Menu */
+        #mobile-menu-btn { display: block; background: none; border: none; color: white; cursor: pointer; }
+        .mobile-nav {
+            position: fixed; top: 80px; left: -100%; width: 100%; height: calc(100vh - 80px);
+            background: var(--color-slate-950); padding: 2rem; transition: var(--transition); z-index: 99;
+        }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav a { display: block; font-size: 1.5rem; margin-bottom: 1.5rem; color: white; text-decoration: none; font-family: 'Oswald'; }
+
+        /* Hero & Countdown */
+        .hero { 
+            position: relative; padding: 120px 0 60px; 
+            background: radial-gradient(circle at top right, #064e3b, transparent), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; background-position: center;
+        }
+        .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--color-slate-950) 0%, rgba(2,6,23,0.4) 100%); }
+
+        .hero-content { position: relative; z-index: 1; max-width: 800px; }
+        .hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 8vw, 5.5rem); line-height: 0.9; margin-bottom: 1.5rem; }
+        
+        .countdown { display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; }
+        .count-item { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 1rem; border-radius: 12px; min-width: 80px; text-align: center; }
+        .count-val { display: block; font-size: 1.5rem; font-weight: 800; color: var(--color-gold); }
+        .count-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; }
+
+        /* Live Scores Sidebar Style */
+        .live-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: -50px; position: relative; z-index: 10; }
+        @media (min-width: 1024px) { .live-grid { grid-template-columns: 2fr 1fr; } }
+
+        /* Cards */
+        .card { 
+            background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; backdrop-filter: blur(10px); overflow: hidden;
+            transition: var(--transition);
+        }
+        .card:hover { border-color: var(--color-emerald-400); transform: translateY(-5px); }
+        .card-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+
+        /* News Section */
+        .news-filters { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1rem; margin-bottom: 2rem; }
+        .filter-btn { 
+            padding: 0.5rem 1.5rem; border-radius: 99px; border: 1px solid rgba(255,255,255,0.2);
+            background: transparent; color: white; cursor: pointer; white-space: nowrap; transition: var(--transition);
+        }
+        .filter-btn.active { background: var(--color-emerald-500); border-color: var(--color-emerald-500); }
+
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .news-card img { width: 100%; height: 200px; object-fit: cover; transition: var(--transition); }
+        .news-card:hover img { transform: scale(1.05); }
+        .news-content { padding: 1.5rem; }
+        .news-tag { color: var(--color-emerald-400); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+        .news-title { font-family: 'Oswald'; margin: 0.5rem 0; font-size: 1.25rem; line-height: 1.3; }
+
+        /* VISTA DE NOTICIA (MODAL) */
+        .news-reader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--color-slate-950); z-index: 200;
+            display: none; overflow-y: auto; padding-bottom: 50px;
+            opacity: 0; transform: translateY(20px); transition: all 0.5s ease;
+        }
+        .news-reader-overlay.active { display: block; opacity: 1; transform: translateY(0); }
+
+        .reader-header { height: 60vh; position: relative; display: flex; align-items: flex-end; padding-bottom: 4rem; }
+        .reader-header-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .reader-header-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, var(--color-slate-950)); }
+        
+        .reader-container { max-width: 800px; margin: 0 auto; position: relative; padding: 0 1.5rem; }
+        .reader-category { color: var(--color-emerald-400); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; font-size: 0.9rem; }
+        .reader-title { font-family: 'Oswald'; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; margin: 1rem 0; }
+        .reader-meta { display: flex; gap: 2rem; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1rem 0; margin-bottom: 2rem; opacity: 0.7; font-size: 0.9rem; }
+        
+        .reader-content { font-size: 1.15rem; line-height: 1.8; color: #cbd5e1; }
+        .reader-content p { margin-bottom: 1.5rem; }
+        .reader-content .dropcap { float: left; font-size: 4.5rem; line-height: 1; font-family: 'Playfair Display'; margin-right: 10px; color: var(--color-emerald-400); }
+        .reader-content h2 { font-family: 'Oswald'; color: white; margin: 2.5rem 0 1rem; font-size: 1.8rem; }
+        .reader-quote { font-family: 'Playfair Display'; font-style: italic; font-size: 1.5rem; border-left: 4px solid var(--color-emerald-400); padding-left: 1.5rem; margin: 2rem 0; color: white; }
+
+        .close-reader, .close-modal {
+            position: fixed; top: 20px; right: 20px; z-index: 210;
+            background: var(--color-emerald-500); border: none; width: 50px; height: 50px;
+            border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: var(--transition);
+        }
+        .close-reader:hover, .close-modal:hover { transform: rotate(90deg); background: var(--color-emerald-400); }
+
+        /* Buttons */
+        .btn { 
+            padding: 0.8rem 2rem; border-radius: 12px; border: none; font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); text-decoration: none;
+        }
+        .btn-primary { background: var(--color-emerald-500); color: white; }
+        .btn-primary:hover { background: var(--color-emerald-400); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+
+        /* Stats Section */
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+
+        /* Ticker */
+        .ticker { background: var(--color-emerald-500); color: black; padding: 10px 0; overflow: hidden; font-weight: 700; }
+        .ticker-wrapper { display: flex; animation: tick 30s linear infinite; white-space: nowrap; }
+        @keyframes tick { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Sedes */
+        .venues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .venue-card img {
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .venue-content {
+            padding: 1.25rem;
+        }
+
+        .venue-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin: 1rem 0 1.25rem;
+        }
+
+        .venue-meta div {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 0.8rem;
+            border-radius: 12px;
+        }
+
+        .venue-meta span {
+            display: block;
+            font-size: 0.75rem;
+            opacity: 0.65;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+
+        .venue-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .highlight-box {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 1.25rem;
+        }
+
+        /* Modales generales */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.92);
+            z-index: 205;
+            display: none;
+            overflow-y: auto;
+            padding: 90px 1.5rem 40px;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        .modal-panel {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+        }
+
+        .modal-banner {
+            position: relative;
+            min-height: 240px;
+            display: flex;
+            align-items: flex-end;
+            padding: 2rem;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .modal-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(2,6,23,1), rgba(2,6,23,0.2));
+        }
+
+        .modal-banner-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .calendar-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1rem 1.2rem;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .calendar-stage {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.35rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(16,185,129,0.12);
+            color: var(--color-emerald-400);
+            border: 1px solid rgba(16,185,129,0.25);
+        }
+
+        .status-pill {
+            padding: 0.35rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.12);
+            text-align: center;
+        }
+
+        .status-confirmado {
+            background: rgba(16,185,129,0.12);
+            color: var(--color-emerald-400);
+        }
+
+        .status-pendiente {
+            background: rgba(251,191,36,0.12);
+            color: var(--color-gold);
+        }
+
+        .calendar-note {
+            margin-top: 1.5rem;
+            padding: 1rem 1.2rem;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+            border-left: 4px solid var(--color-emerald-400);
+            color: #cbd5e1;
+        }
+
+        .venue-detail-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 2rem;
+        }
+
+        .venue-detail-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .venue-detail-list div {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .calendar-item {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .venue-detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .nav-links { display: flex; }
+            #mobile-menu-btn { display: none; }
+        }
+
+        /* Pulse Animation */
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <!-- Vista de Lectura (Hidden by default) -->
+    <div class="news-reader-overlay" id="newsReader">
+        <button class="close-reader" onclick="closeArticle()">
+            <i data-lucide="x"></i>
+        </button>
+        <article id="readerContent">
+            <!-- Cargado dinámicamente -->
+        </article>
+    </div>
+
+    <!-- Modal Calendario Completo -->
+    <div class="modal-overlay" id="calendarModal">
+        <button class="close-modal" onclick="closeCalendarModal()">
+            <i data-lucide="x"></i>
+        </button>
+        <div class="modal-panel">
+            <div class="modal-banner" style="background-image: url('https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1600&q=80');">
+                <div class="modal-banner-content">
+                    <span class="reader-category">Calendario Oficial</span>
+                    <h2 class="reader-title" style="margin-bottom: 0;">Calendario Completo del Mundial 2026</h2>
+                    <p style="max-width: 800px; opacity: 0.9; margin-top: 1rem; font-size: 1.05rem;">
+                        Consulta los encuentros confirmados hasta el momento. Las llaves y cruces restantes se actualizarán conforme avance el torneo.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="calendar-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalle de Sede -->
+    <div class="modal-overlay" id="venueModal">
+        <button class="close-modal" onclick="closeVenueModal()">
+            <i data-lucide="x"></i>
+        </button>
+        <div class="modal-panel" id="venue-modal-panel">
+            <!-- Cargado dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Barra de Noticias Rápida -->
+    <div class="ticker">
+        <div class="ticker-wrapper">
+            <span> • NUEVA SEDE CONFIRMADA: ESTADIO AZTECA PARA LA INAUGURACIÓN • 48 SELECCIONES CONFIRMADAS • VENTA DE ENTRADAS FASE 1 INICIA EN JUNIO • </span>
+            <span> • NUEVA SEDE CONFIRMADA: ESTADIO AZTECA PARA LA INAUGURACIÓN • 48 SELECCIONES CONFIRMADAS • VENTA DE ENTRADAS FASE 1 INICIA EN JUNIO • </span>
+        </div>
+    </div>
+
+    <header>
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <i data-lucide="trophy" class="text-emerald-500"></i>
+                <h1>VISION MUNDIAL<span style="color: var(--color-emerald-500)"> HQ</span></h1>
+            </a>
+            
+            <nav class="nav-links">
+                <a href="#inicio">Inicio</a>
+                <a href="#noticias">Noticias</a>
+                <a href="#partidos">Partidos</a>
+                <a href="#estadisticas">Estadísticas</a>
+                <a href="#sedes">Sedes</a>
+            </nav>
+
+<div class="header-actions">
+    <a href="../index.html" class="btn" style="background: rgba(255,255,255,0.1); color: white;">
+        <i data-lucide="arrow-left"></i> Inicio App
+    </a>
+    <button class="btn btn-primary" onclick="showSubscribeModal()">
+        <i data-lucide="mail"></i> <span class="hidden sm:inline">Suscribirse</span>
+    </button>
+    <button id="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i data-lucide="menu"></i>
+    </button>
+</div>
+        </div>
+    </header>
+
+<div class="mobile-nav" id="mobile-nav">
+    <a href="../index.html">Volver a la App</a>
+    <a href="#inicio" onclick="toggleMobileMenu()">Inicio</a>
+    <a href="#noticias" onclick="toggleMobileMenu()">Noticias</a>
+    <a href="#partidos" onclick="toggleMobileMenu()">Partidos</a>
+    <a href="#estadisticas" onclick="toggleMobileMenu()">Estadísticas</a>
+    <a href="#sedes" onclick="toggleMobileMenu()">Sedes</a>
+</div>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="inicio">
+            <div class="container">
+                <div class="hero-content">
+                    <span style="color: var(--color-emerald-400); font-weight: 700; letter-spacing: 2px;">CANADÁ • MÉXICO • USA</span>
+                    <h2>EL MUNDIAL MÁS GRANDE DE LA HISTORIA</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">
+                        Sigue cada detalle de las 48 selecciones, 16 sedes y 104 partidos en tiempo real con nuestra cobertura premium.
+                    </p>
+                    
+                    <div class="countdown" id="countdown">
+                        <div class="count-item"><span class="count-val" id="days">00</span><span class="count-label">Días</span></div>
+                        <div class="count-item"><span class="count-val" id="hours">00</span><span class="count-label">Horas</span></div>
+                        <div class="count-item"><span class="count-val" id="mins">00</span><span class="count-label">Min</span></div>
+                        <div class="count-item"><span class="count-val" id="secs">00</span><span class="count-label">Seg</span></div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="#noticias" class="btn btn-primary">Ver Noticias</a>
+                        <a href="#sedes" class="btn" style="background: rgba(255,255,255,0.1); color: white;">Explorar Sedes</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <div class="live-grid">
+                <!-- Noticias Principales -->
+                <section id="noticias" style="padding: 4rem 0;">
+                    <div class="section-header" style="margin-bottom: 2rem;">
+                        <h3 style="font-family: 'Oswald'; font-size: 2rem; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="newspaper" style="color: var(--color-emerald-400)"></i> Últimas Noticias
+                        </h3>
+                    </div>
+
+                    <div class="news-filters">
+                        <button class="filter-btn active" onclick="filterNews('todas', event)">Todas</button>
+                        <button class="filter-btn" onclick="filterNews('selecciones', event)">Selecciones</button>
+                        <button class="filter-btn" onclick="filterNews('sedes', event)">Sedes</button>
+                        <button class="filter-btn" onclick="filterNews('boletos', event)">Boletos</button>
+                    </div>
+
+                    <div class="news-grid" id="news-container">
+                        <!-- Noticias cargadas por JS -->
+                    </div>
+                </section>
+
+                <!-- Sidebar Marcadores -->
+                <aside id="partidos" style="padding: 4rem 0;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 style="font-family: 'Oswald';">MARCADORES EN VIVO</h4>
+                            <span style="background: red; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; animation: pulse 2s infinite;">LIVE</span>
+                        </div>
+                        <div style="padding: 1.5rem;" id="live-matches">
+                            <!-- Marcadores simulados por JS -->
+                        </div>
+                        <div style="padding: 1rem; text-align: center; background: rgba(255,255,255,0.05);">
+                            <button class="btn" style="font-size: 0.8rem; color: var(--color-emerald-400);" onclick="openCalendarModal()">
+                                Ver Calendario Completo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 2rem; padding: 1.5rem;">
+                        <h4 style="font-family: 'Oswald'; margin-bottom: 1rem;">SUSCRIPCIÓN PREMIUM</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 1.5rem; opacity: 0.7;">Recibe alertas de goles de tu selección favorita directamente en tu móvil.</p>
+                        <input type="email" placeholder="tu@email.com" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; margin-bottom: 1rem;">
+                        <button class="btn btn-primary" style="width: 100%;" onclick="alert('¡Gracias por suscribirte!')">Activar Alertas</button>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Sección de Estadísticas -->
+            <section id="estadisticas" style="padding: 4rem 0;">
+                <h3 style="font-family: 'Oswald'; font-size: 2rem; margin-bottom: 2rem;">DATA CENTER 2026</h3>
+                <div class="stats-container">
+                    <div class="card" style="padding: 1.5rem;">
+                        <h5 style="margin-bottom: 1rem;">Favoritos al Título (IA Predictor)</h5>
+                        <canvas id="favChart" height="200"></canvas>
+                    </div>
+                    <div class="card" style="padding: 1.5rem;">
+                        <h5 style="margin-bottom: 1rem;">Crecimiento de Audiencia Est.</h5>
+                        <canvas id="audienceChart" height="200"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Sedes -->
+            <section id="sedes" style="padding: 2rem 0 5rem;">
+                <div class="section-header" style="margin-bottom: 2rem;">
+                    <h3 style="font-family: 'Oswald'; font-size: 2rem; display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="map-pinned" style="color: var(--color-emerald-400)"></i> Sedes del Mundial 2026
+                    </h3>
+                    <p style="margin-top: 0.8rem; max-width: 850px; opacity: 0.85; font-size: 1.05rem;">
+                        Explora las ciudades anfitrionas, sus estadios, capacidades y algunos datos curiosos. Esta edición reunirá ambientes muy distintos: altitud, costas, grandes metrópolis y templos históricos del fútbol.
+                    </p>
+                </div>
+
+                <div class="venues-grid" id="venues-container">
+                    <!-- Sedes cargadas por JS -->
+                </div>
+
+                <div class="venue-highlights">
+                    <div class="highlight-box">
+                        <h4 style="font-family: 'Oswald'; margin-bottom: 0.7rem;">Dato Curioso</h4>
+                        <p style="opacity: 0.8;">El Estadio Azteca puede convertirse en el recinto más icónico del torneo por su peso histórico y su ambiente incomparable.</p>
+                    </div>
+                    <div class="highlight-box">
+                        <h4 style="font-family: 'Oswald'; margin-bottom: 0.7rem;">Factor Viaje</h4>
+                        <p style="opacity: 0.8;">Las selecciones deberán adaptarse a largas distancias, cambios de clima y diferentes husos horarios en tres países sede.</p>
+                    </div>
+                    <div class="highlight-box">
+                        <h4 style="font-family: 'Oswald'; margin-bottom: 0.7rem;">Experiencia Fan</h4>
+                        <p style="opacity: 0.8;">Cada sede tendrá una identidad distinta: cultura local, gastronomía, fan fests y rutas urbanas que enriquecerán el torneo.</p>
+                    </div>
+                    <div class="highlight-box">
+                        <h4 style="font-family: 'Oswald'; margin-bottom: 0.7rem;">Tecnología</h4>
+                        <p style="opacity: 0.8;">Varias sedes destacan por conectividad avanzada, pantallas de gran formato, accesos inteligentes y nuevas zonas inmersivas.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer style="background: #000; padding: 4rem 0; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem;">
+                <div>
+                    <a href="#" class="logo" style="margin-bottom: 1.5rem;">
+                        <i data-lucide="trophy"></i>
+                        <h1>MUNDIAL 2026</h1>
+                    </a>
+                    <p style="opacity: 0.5; font-size: 0.9rem;">El portal de referencia para el evento deportivo más grande del siglo XXI. Datos, pasión y tecnología.</p>
+                </div>
+                <div>
+                    <h5 style="font-family: 'Oswald'; margin-bottom: 1rem;">ENLACES</h5>
+                    <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="#" style="color: rgba(255,255,255,0.5); text-decoration: none;">FIFA Official</a>
+                        <a href="#sedes" style="color: rgba(255,255,255,0.5); text-decoration: none;">Sedes</a>
+                        <a href="#" style="color: rgba(255,255,255,0.5); text-decoration: none;">Privacidad</a>
+                    </nav>
+                </div>
+                <div>
+                    <h5 style="font-family: 'Oswald'; margin-bottom: 1rem;">SÍGUENOS</h5>
+                    <div style="display: flex; gap: 1rem;">
+                        <i data-lucide="instagram" style="cursor: pointer;"></i>
+                        <i data-lucide="twitter" style="cursor: pointer;"></i>
+                        <i data-lucide="youtube" style="cursor: pointer;"></i>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 4rem; opacity: 0.3; font-size: 0.8rem;">
+                © 2026 Vision Mundial HQ - Desarrollo de Vanguardia
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuración de Datos de Noticias Ampliada
+        const newsData = [
+            { 
+                id: 1, 
+                cat: 'selecciones', 
+                title: 'Argentina confirma base en Miami para 2026', 
+                tag: 'AFA', 
+                author: 'Julián Montoya',
+                date: '15 Abr, 2024',
+                readTime: '5 min',
+                img: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200',
+                content: `
+                    <span class="dropcap">L</span>a Asociación del Fútbol Argentino (AFA) ha dado un paso estratégico fundamental de cara a la defensa de su título mundial. Lionel Scaloni, junto a su equipo técnico, ha ratificado que la concentración principal del equipo se situará en las nuevas instalaciones de alta tecnología en Miami, Florida.
+                    <h2>Un centro de alto rendimiento sin precedentes</h2>
+                    <p>Este predio no solo servirá como campo de entrenamiento, sino como hub logístico para los desplazamientos por todo Estados Unidos. "Buscamos minimizar el desgaste físico de los jugadores en un mundial que será geográficamente exigente", afirmó el seleccionador nacional en rueda de prensa.</p>
+                    <div class="reader-quote">"Miami se siente como casa. La comunidad latina nos brindará ese calor necesario para buscar la cuarta estrella."</div>
+                    <p>Las instalaciones cuentan con tres canchas de medidas FIFA, un centro de recuperación criogénica y suites de descanso personalizadas para cada miembro del plantel. Además, se espera que Lionel Messi juegue un papel clave como embajador local durante la estancia de la albiceleste.</p>
+                `
+            },
+            { 
+                id: 2, 
+                cat: 'sedes', 
+                title: 'Remodelación del Estadio Azteca alcanza el 60%', 
+                tag: 'MEXICO', 
+                author: 'Mariana Sosa',
+                date: '14 Abr, 2024',
+                readTime: '8 min',
+                img: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1200',
+                content: `
+                    <span class="dropcap">E</span>l Coloso de Santa Úrsula se prepara para hacer historia una vez más. Las obras de remodelación del Estadio Azteca avanzan según el calendario previsto, asegurando que el recinto esté listo para ser el primer estadio en la historia en albergar tres inauguraciones mundialistas.
+                    <h2>Modernidad respetando la tradición</h2>
+                    <p>El enfoque principal de la obra ha sido la mejora de la experiencia VIP y la optimización de los flujos de seguridad. Se han instalado nuevas pantallas 4K gigantes y un sistema de iluminación LED que reduce el consumo energético en un 40%.</p>
+                    <p>Los ingenieros a cargo destacan que la estructura icónica se mantendrá intacta, pero los vestuarios y zonas de prensa han sido completamente demolidos para dar paso a instalaciones de clase mundial que cumplen con los estándares más estrictos de la FIFA.</p>
+                `
+            },
+            { 
+                id: 3, 
+                cat: 'boletos', 
+                title: 'Precios de entradas: Todo lo que debes saber', 
+                tag: 'TICKETS', 
+                author: 'Kevin Richards',
+                date: '12 Abr, 2024',
+                readTime: '4 min',
+                img: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1200',
+                content: `
+                    <span class="dropcap">L</span>a demanda para la Copa del Mundo 2026 ha superado todas las proyecciones previas. La FIFA ha anunciado hoy la estructura de precios para la Fase 1 de venta, que iniciará oficialmente en el mes de junio.
+                    <h2>Accesibilidad vs Exclusividad</h2>
+                    <p>Se mantendrán categorías de precios "populares" exclusivamente para residentes de los países anfitriones, mientras que los paquetes de hospitalidad ya reportan una preventa agotada en ciudades como Los Ángeles y Nueva York.</p>
+                    <p>Los expertos recomiendan registrarse en el portal oficial de boletos lo antes posible, ya que se espera un sistema de sorteo debido al volumen masivo de peticiones.</p>
+                `
+            },
+            { 
+                id: 4, 
+                cat: 'selecciones', 
+                title: 'España busca renovar su delantera para el Mundial', 
+                tag: 'RFEF', 
+                author: 'Luis García',
+                date: '10 Abr, 2024',
+                readTime: '6 min',
+                img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1200',
+                content: `
+                    <span class="dropcap">L</span>a selección española enfrenta un relevo generacional crítico en su línea ofensiva. Con la mira puesta en 2026, el seleccionador nacional ha comenzado a integrar jóvenes promesas de La Liga, buscando recuperar la pegada que faltó en torneos anteriores.
+                    <h2>El Factor Juventud</h2>
+                    <p>Analistas deportivos coinciden en que la movilidad y el dinamismo serán las claves para enfrentar a defensas físicas en el continente americano. España busca combinar el clásico juego de posesión con una verticalidad más agresiva.</p>
+                `
+            },
+            { 
+                id: 5, 
+                cat: 'sedes', 
+                title: 'SoFi Stadium será la sede tecnológica por excelencia', 
+                tag: 'USA', 
+                author: 'Sarah Jenkins',
+                date: '08 Abr, 2024',
+                readTime: '7 min',
+                img: 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?w=1200',
+                content: `
+                    <span class="dropcap">U</span>bicado en el corazón de Inglewood, el SoFi Stadium promete redefinir lo que significa ver un partido de fútbol. Equipado con la "Infinity Screen" de Samsung, los espectadores no perderán un solo detalle, sin importar su ubicación en el estadio.
+                    <h2>Conectividad Total</h2>
+                    <p>El estadio cuenta con capacidad para conectar a 70,000 usuarios simultáneamente a redes Wi-Fi 6, permitiendo el uso de aplicaciones de realidad aumentada durante los partidos del mundial.</p>
+                `
+            },
+            { 
+                id: 6, 
+                cat: 'boletos', 
+                title: 'Paquetes de hospitalidad rompen récords de preventa', 
+                tag: 'FIFA', 
+                author: 'Michael Owen',
+                date: '05 Abr, 2024',
+                readTime: '5 min',
+                img: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200',
+                content: `
+                    <span class="dropcap">N</span>unca antes se había visto tal interés corporativo en un evento deportivo. Los paquetes de hospitalidad, que incluyen cenas gourmet, traslados privados y vistas privilegiadas, han registrado un aumento del 150% en ventas comparado con Qatar 2022.
+                    <p>Este fenómeno comercial asegura que el mundial de 2026 no solo será el más grande en escala, sino también el más rentable de la historia.</p>
+                `
+            }
+        ];
+
+        // Datos de Sedes
+        const venuesData = [
+            {
+                id: 1,
+                name: 'Estadio Azteca',
+                city: 'Ciudad de México, México',
+                country: 'México',
+                capacity: '83,000',
+                altitude: '2,240 m',
+                curiosity: 'Sería el estadio más histórico del torneo y uno de los más reconocibles del planeta.',
+                image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=1200&q=80',
+                description: 'El Estadio Azteca combina historia pura con una atmósfera única. Su ubicación en la capital mexicana lo convierte en uno de los grandes epicentros del campeonato.',
+                highlights: [
+                    'Ambiente legendario y enorme peso simbólico.',
+                    'Gran acceso urbano y tradición futbolística.',
+                    'Punto ideal para ceremonias y partidos de máxima audiencia.'
+                ]
+            },
+            {
+                id: 2,
+                name: 'SoFi Stadium',
+                city: 'Los Ángeles, USA',
+                country: 'Estados Unidos',
+                capacity: '70,000+',
+                altitude: '30 m',
+                curiosity: 'Destaca por su propuesta audiovisual y por una experiencia premium de primer nivel.',
+                image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80',
+                description: 'SoFi Stadium representa el lado más moderno y tecnológico del torneo. Es uno de los recintos más llamativos por diseño, conectividad y experiencia digital.',
+                highlights: [
+                    'Pantallas gigantes e infraestructura inmersiva.',
+                    'Entorno metropolitano con enorme capacidad logística.',
+                    'Ideal para un espectáculo global de alta producción.'
+                ]
+            },
+            {
+                id: 3,
+                name: 'AT&T Stadium',
+                city: 'Arlington, USA',
+                country: 'Estados Unidos',
+                capacity: '80,000+',
+                altitude: '184 m',
+                curiosity: 'Es una sede pensada para grandes eventos masivos y visualmente muy imponente.',
+                image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80',
+                description: 'AT&T Stadium ofrece escala, espectáculo y una de las estructuras interiores más reconocibles del circuito deportivo norteamericano.',
+                highlights: [
+                    'Gran capacidad y comodidad para eventos de alto perfil.',
+                    'Sede ideal para partidos de eliminación directa.',
+                    'Entorno preparado para gran afluencia internacional.'
+                ]
+            },
+            {
+                id: 4,
+                name: 'BMO Field',
+                city: 'Toronto, Canadá',
+                country: 'Canadá',
+                capacity: '45,000 aprox.',
+                altitude: '76 m',
+                curiosity: 'Toronto ofrece una mezcla multicultural que puede convertir cada partido en una fiesta global.',
+                image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80',
+                description: 'Toronto aporta diversidad, energía urbana y un entorno ideal para aficionados de todo el mundo. Será una sede con fuerte identidad internacional.',
+                highlights: [
+                    'Ciudad cosmopolita y gran conectividad.',
+                    'Experiencia fan muy completa dentro y fuera del estadio.',
+                    'Perfecta para atraer público de múltiples comunidades.'
+                ]
+            },
+            {
+                id: 5,
+                name: 'BC Place',
+                city: 'Vancouver, Canadá',
+                country: 'Canadá',
+                capacity: '54,000',
+                altitude: '70 m',
+                curiosity: 'Su entorno natural y urbano la vuelven una de las postales más atractivas del Mundial.',
+                image: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1200&q=80',
+                description: 'Vancouver mezcla paisaje, modernidad y gran cultura deportiva. Es una sede que puede ofrecer una experiencia distinta y muy memorable.',
+                highlights: [
+                    'Entorno visual privilegiado.',
+                    'Recinto multifuncional de gran impacto.',
+                    'Ciudad ideal para turismo deportivo internacional.'
+                ]
+            },
+            {
+                id: 6,
+                name: 'MetLife Stadium',
+                city: 'Nueva York / Nueva Jersey, USA',
+                country: 'Estados Unidos',
+                capacity: '82,500',
+                altitude: '8 m',
+                curiosity: 'La región metropolitana le da un alcance mediático gigantesco a cualquier partido.',
+                image: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1200&q=80',
+                description: 'MetLife Stadium es uno de los escenarios con mayor impacto comercial y mediático. Su entorno lo posiciona como una de las grandes vitrinas del torneo.',
+                highlights: [
+                    'Cobertura global por su ubicación estratégica.',
+                    'Acceso a una de las regiones más influyentes del mundo.',
+                    'Perfil ideal para encuentros de máxima atención internacional.'
+                ]
+            }
+        ];
+
+        // Calendario
+        const scheduleData = [
+            {
+                date: '11 Jun 2026',
+                stage: 'Partido Inaugural',
+                match: 'México vs Rival por confirmar',
+                venue: 'Estadio Azteca',
+                status: 'confirmado'
+            },
+            {
+                date: '12 Jun 2026',
+                stage: 'Fase de Grupos',
+                match: 'Canadá vs Rival por confirmar',
+                venue: 'Toronto',
+                status: 'confirmado'
+            },
+            {
+                date: '12 Jun 2026',
+                stage: 'Fase de Grupos',
+                match: 'USA vs Rival por confirmar',
+                venue: 'Los Ángeles',
+                status: 'confirmado'
+            },
+            {
+                date: '13 - 27 Jun 2026',
+                stage: 'Fase de Grupos',
+                match: 'Partidos distribuidos en múltiples sedes',
+                venue: 'Calendario detallado por actualizar',
+                status: 'confirmado'
+            },
+            {
+                date: '28 Jun - 03 Jul 2026',
+                stage: 'Dieciseisavos',
+                match: 'Cruces por definirse según posiciones',
+                venue: 'Sedes por anunciar',
+                status: 'pendiente'
+            },
+            {
+                date: '04 - 07 Jul 2026',
+                stage: 'Octavos / Cuartos',
+                match: 'Llaves por definirse',
+                venue: 'Se decidirán después',
+                status: 'pendiente'
+            },
+            {
+                date: '08 - 11 Jul 2026',
+                stage: 'Cuartos / Semifinales',
+                match: 'Emparejamientos por definirse',
+                venue: 'Se decidirán después',
+                status: 'pendiente'
+            },
+            {
+                date: '19 Jul 2026',
+                stage: 'Gran Final',
+                match: 'Final del Mundial 2026',
+                venue: 'Sede final por confirmar',
+                status: 'pendiente'
+            }
+        ];
+
+        // Función para renderizar noticias
+        function renderNews(filter = 'todas') {
+            const container = document.getElementById('news-container');
+            const filtered = filter === 'todas' ? newsData : newsData.filter(n => n.cat === filter);
+            
+            container.innerHTML = filtered.map(news => `
+                <article class="card news-card" onclick="openArticle(${news.id})" style="cursor: pointer">
+                    <img src="${news.img}" alt="${news.title}">
+                    <div class="news-content">
+                        <span class="news-tag">${news.tag}</span>
+                        <h4 class="news-title">${news.title}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                            <span style="font-size: 0.8rem; opacity: 0.5;">Hace 2 horas • ${news.readTime}</span>
+                            <i data-lucide="arrow-right" style="width: 16px; color: var(--color-emerald-400)"></i>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Render de Sedes
+        function renderVenues() {
+            const container = document.getElementById('venues-container');
+            container.innerHTML = venuesData.map(venue => `
+                <article class="card venue-card">
+                    <img src="${venue.image}" alt="${venue.name}">
+                    <div class="venue-content">
+                        <span class="news-tag">${venue.country}</span>
+                        <h4 class="news-title">${venue.name}</h4>
+                        <p style="opacity: 0.75; margin-bottom: 0.5rem;">${venue.city}</p>
+
+                        <div class="venue-meta">
+                            <div>
+                                <span>Capacidad</span>
+                                <strong>${venue.capacity}</strong>
+                            </div>
+                            <div>
+                                <span>Altitud</span>
+                                <strong>${venue.altitude}</strong>
+                            </div>
+                        </div>
+
+                        <p style="opacity: 0.82; margin-bottom: 1rem;">${venue.curiosity}</p>
+
+                        <button class="btn btn-primary" onclick="openVenueModal(${venue.id})">
+                            <i data-lucide="map"></i> Ver sede
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Lógica del Lector de Noticias
+        function openArticle(id) {
+            const article = newsData.find(a => a.id === id);
+            const reader = document.getElementById('newsReader');
+            const content = document.getElementById('readerContent');
+
+            content.innerHTML = `
+                <div class="reader-header">
+                    <img src="${article.img}" class="reader-header-img" alt="">
+                    <div class="reader-header-overlay"></div>
+                    <div class="container reader-container">
+                        <span class="reader-category">${article.cat}</span>
+                        <h1 class="reader-title">${article.title}</h1>
+                    </div>
+                </div>
+                <div class="container reader-container">
+                    <div class="reader-meta">
+                        <span><i data-lucide="user" style="width:14px; display:inline; margin-right:5px"></i> Por <b>${article.author}</b></span>
+                        <span><i data-lucide="calendar" style="width:14px; display:inline; margin-right:5px"></i> ${article.date}</span>
+                        <span><i data-lucide="clock" style="width:14px; display:inline; margin-right:5px"></i> Lectura: ${article.readTime}</span>
+                    </div>
+                    <div class="reader-content">
+                        ${article.content}
+                    </div>
+                    <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="alert('Enlace copiado al portapapeles')"><i data-lucide="share-2"></i> Compartir Noticia</button>
+                        <button class="btn" style="background: #1e293b; color: white;" onclick="closeArticle()">Volver al Inicio</button>
+                    </div>
+                </div>
+            `;
+
+            reader.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+            window.scrollTo({ top: 0 });
+        }
+
+        function closeArticle() {
+            const reader = document.getElementById('newsReader');
+            reader.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Modal de sedes
+        function openVenueModal(id) {
+            const venue = venuesData.find(v => v.id === id);
+            const panel = document.getElementById('venue-modal-panel');
+            const modal = document.getElementById('venueModal');
+
+            panel.innerHTML = `
+                <div class="modal-banner" style="background-image: url('${venue.image}'); min-height: 300px;">
+                    <div class="modal-banner-content">
+                        <span class="reader-category">${venue.country}</span>
+                        <h2 class="reader-title" style="margin-bottom: 0.5rem;">${venue.name}</h2>
+                        <p style="opacity: 0.9;">${venue.city}</p>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="venue-detail-grid">
+                        <div>
+                            <h3 style="font-family: 'Oswald'; font-size: 1.8rem; margin-bottom: 1rem;">Información de la sede</h3>
+                            <p style="font-size: 1.05rem; line-height: 1.8; color: #cbd5e1; margin-bottom: 1.5rem;">
+                                ${venue.description}
+                            </p>
+
+                            <div class="calendar-note">
+                                <strong style="color: white;">Dato curioso:</strong> ${venue.curiosity}
+                            </div>
+
+                            <div style="margin-top: 2rem;">
+                                <h4 style="font-family: 'Oswald'; margin-bottom: 1rem;">¿Por qué destaca?</h4>
+                                <ul style="padding-left: 1.2rem; line-height: 1.9; color: #cbd5e1;">
+                                    ${venue.highlights.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="venue-detail-list">
+                            <div>
+                                <span style="display:block; opacity:0.65; text-transform:uppercase; font-size:0.8rem; margin-bottom:0.4rem;">Ciudad</span>
+                                <strong>${venue.city}</strong>
+                            </div>
+                            <div>
+                                <span style="display:block; opacity:0.65; text-transform:uppercase; font-size:0.8rem; margin-bottom:0.4rem;">Capacidad</span>
+                                <strong>${venue.capacity}</strong>
+                            </div>
+                            <div>
+                                <span style="display:block; opacity:0.65; text-transform:uppercase; font-size:0.8rem; margin-bottom:0.4rem;">Altitud</span>
+                                <strong>${venue.altitude}</strong>
+                            </div>
+                            <div>
+                                <span style="display:block; opacity:0.65; text-transform:uppercase; font-size:0.8rem; margin-bottom:0.4rem;">Ambiente esperado</span>
+                                <strong>Alta demanda, experiencia internacional y fuerte identidad local</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+            window.scrollTo({ top: 0 });
+        }
+
+        function closeVenueModal() {
+            document.getElementById('venueModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Modal de calendario
+        function openCalendarModal() {
+            const modal = document.getElementById('calendarModal');
+            const content = document.getElementById('calendar-content');
+
+            content.innerHTML = `
+                <div style="display:flex; flex-wrap:wrap; gap:0.8rem; margin-bottom:1rem;">
+                    <span class="calendar-stage"><i data-lucide="calendar-days" style="width:16px"></i> 104 partidos proyectados</span>
+                    <span class="calendar-stage"><i data-lucide="map-pinned" style="width:16px"></i> 16 sedes</span>
+                    <span class="calendar-stage"><i data-lucide="trophy" style="width:16px"></i> 48 selecciones</span>
+                </div>
+
+                <div class="calendar-grid">
+                    ${scheduleData.map(item => `
+                        <div class="calendar-item">
+                            <div>
+                                <div style="font-size:0.8rem; opacity:0.65; text-transform:uppercase; margin-bottom:0.3rem;">Fecha</div>
+                                <strong>${item.date}</strong>
+                            </div>
+                            <div>
+                                <div style="font-size:0.8rem; opacity:0.65; text-transform:uppercase; margin-bottom:0.3rem;">Fase</div>
+                                <strong>${item.stage}</strong>
+                            </div>
+                            <div>
+                                <div style="font-size:0.8rem; opacity:0.65; text-transform:uppercase; margin-bottom:0.3rem;">Partido / Estado</div>
+                                <strong>${item.match}</strong><br>
+                                <span style="opacity:0.7;">${item.venue}</span>
+                            </div>
+                            <div>
+                                <span class="status-pill ${item.status === 'confirmado' ? 'status-confirmado' : 'status-pendiente'}">
+                                    ${item.status === 'confirmado' ? 'Confirmado' : 'Por definirse'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="calendar-note">
+                    <strong style="color:white;">Nota:</strong> Ya se muestran los partidos y bloques de calendario disponibles hasta el momento. Los cruces futuros, sedes exactas y varios emparejamientos se decidirán después, conforme se definan posiciones, llaves y anuncios oficiales.
+                </div>
+            `;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+            window.scrollTo({ top: 0 });
+        }
+
+        function closeCalendarModal() {
+            document.getElementById('calendarModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Filtros de noticias
+        function filterNews(category, event) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            renderNews(category);
+        }
+
+        // Simulación de Marcadores en Vivo
+        function updateLiveScores() {
+            const matches = [
+                { t1: 'México', t2: 'Brasil', s1: Math.floor(Math.random() * 3), s2: Math.floor(Math.random() * 2), min: '74\'' },
+                { t1: 'USA', t2: 'Francia', s1: 1, s2: 2, min: 'FT' },
+                { t1: 'Canadá', t2: 'Japón', s1: 0, s2: 0, min: '12\'' }
+            ];
+
+            const container = document.getElementById('live-matches');
+            container.innerHTML = matches.map(m => `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; gap: 0.5rem;">
+                    <div style="flex: 1; font-weight: 600;">${m.t1}</div>
+                    <div style="background: var(--color-slate-800); padding: 4px 12px; border-radius: 4px; font-family: 'Oswald';">
+                        ${m.s1} - ${m.s2}
+                    </div>
+                    <div style="flex: 1; text-align: right; font-weight: 600;">${m.t2}</div>
+                    <div style="margin-left: 10px; font-size: 0.7rem; color: var(--color-emerald-400); width: 30px;">${m.min}</div>
+                </div>
+            `).join('');
+        }
+
+        // Cuenta Regresiva
+        function startCountdown() {
+            const worldCupDate = new Date('June 11, 2026 12:00:00').getTime();
+            
+            setInterval(() => {
+                const now = new Date().getTime();
+                const diff = worldCupDate - now;
+                
+                document.getElementById('days').innerText = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+                document.getElementById('hours').innerText = Math.max(0, Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+                document.getElementById('mins').innerText = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+                document.getElementById('secs').innerText = Math.max(0, Math.floor((diff % (1000 * 60)) / 1000));
+            }, 1000);
+        }
+
+        // Gráficos (Chart.js)
+        function initCharts() {
+            const ctx1 = document.getElementById('favChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Brasil', 'Francia', 'Argentina', 'Inglaterra', 'Otros'],
+                    datasets: [{
+                        data: [25, 20, 18, 15, 22],
+                        backgroundColor: ['#10b981', '#3b82f6', '#fbbf24', '#ef4444', '#475569'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { plugins: { legend: { labels: { color: 'white' } } } }
+            });
+
+            const ctx2 = document.getElementById('audienceChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['2010', '2014', '2018', '2022', '2026 est'],
+                    datasets: [{
+                        label: 'Billones de espectadores',
+                        data: [3.2, 3.5, 3.6, 5.0, 6.5],
+                        borderColor: '#10b981',
+                        tension: 0.4
+                    }]
+                },
+                options: { scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } }
+            });
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-nav').classList.toggle('active');
+        }
+
+        function showSubscribeModal() {
+            const email = prompt("Introduce tu email para recibir noticias exclusivas:");
+            if(email) alert("¡Inscripción completada! Revisa tu bandeja.");
+        }
+
+        // Cerrar modales con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeArticle();
+                closeCalendarModal();
+                closeVenueModal();
+            }
+        });
+
+        // Cerrar modal al hacer click fuera
+        document.getElementById('calendarModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCalendarModal();
+        });
+
+        document.getElementById('venueModal').addEventListener('click', function(e) {
+            if (e.target === this) closeVenueModal();
+        });
+
+        // Inicialización
+        window.onload = () => {
+            lucide.createIcons();
+            renderNews();
+            renderVenues();
+            startCountdown();
+            initCharts();
+            updateLiveScores();
+            setInterval(updateLiveScores, 10000);
+        };
+    </script>
+</body>
+</html>
