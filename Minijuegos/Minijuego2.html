@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflex 2026: Pro Drill - FIFA Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;700&family=Source+Sans+3:wght@400;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.5);
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --red-fail: #ef4444;
+            --gold: #fbbf24;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: #050a18;
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 85vh;
+            max-height: 800px;
+            background: radial-gradient(circle at top, var(--slate-900), var(--slate-950));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.8);
+            padding: 24px;
+        }
+
+        /* HUD */
+        .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-top: 44px;
+}
+
+        .stat-box p { font-family: 'Oswald'; font-size: 0.7rem; letter-spacing: 2px; opacity: 0.6; text-transform: uppercase; }
+        .stat-box h2 { font-family: 'Bebas Neue'; font-size: 3rem; color: var(--emerald); line-height: 1; }
+
+        /* ZONA DE JUEGO (GRID) */
+        .grid-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 15px;
+            padding: 10px 0;
+            position: relative;
+        }
+
+        .node {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* EL OBJETIVO (TARGET) */
+        .target {
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 30px var(--emerald-glow), inset 0 0 15px rgba(255,255,255,0.5);
+            animation: pulseIn 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.27);
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes pulseIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* BARRA DE VIDA/TIEMPO */
+        .health-bar-wrapper {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        #health-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--emerald), var(--gold));
+            transition: width 0.3s ease;
+        }
+
+        /* PIE DE PÁGINA */
+        .footer {
+            text-align: center;
+            padding-top: 10px;
+        }
+
+        .footer p { font-size: 0.65rem; opacity: 0.4; letter-spacing: 1px; font-family: 'Oswald'; }
+
+        /* OVERLAYS */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 40px;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .hidden { display: none !important; }
+
+        .btn-action {
+            background: var(--emerald);
+            color: white;
+            padding: 18px 45px;
+            border-radius: 15px;
+            font-family: 'Oswald';
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-top: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-action:hover { transform: translateY(-3px); background: #34d399; }
+
+        /* EFECTOS DE IMPACTO */
+        .hit-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            border: 2px solid var(--emerald);
+            animation: hitSplash 0.4s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes hitSplash {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .shake { animation: shakeAnim 0.3s ease-in-out; }
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+.back-link{
+    margin-top: 16px;
+    color: white;
+    text-decoration: none;
+    font-family: 'Oswald';
+    letter-spacing: 1px;
+    opacity: 0.85;
+}
+
+@media (max-width: 768px){
+    body{
+        align-items: stretch;
+        overflow: auto;
+    }
+
+    #game-container{
+        width: 100%;
+        max-width: 100%;
+        min-height: 100dvh;
+        height: auto;
+        max-height: none;
+        border-radius: 0;
+        padding: 16px;
+    }
+
+    .hud{
+    margin-bottom: 14px;
+    padding-top: calc(48px + env(safe-area-inset-top));
+}
+
+.menu-floating-btn{
+    top: calc(10px + env(safe-area-inset-top));
+    left: 12px;
+    font-size: 0.82rem;
+    padding: 8px 12px;
+}
+
+    .stat-box h2{
+        font-size: 2.4rem;
+    }
+
+    .grid-area{
+        gap: 10px;
+        padding: 6px 0;
+    }
+
+    .node{
+        border-radius: 16px;
+        min-height: 72px;
+    }
+
+    .overlay{
+        border-radius: 0;
+        padding: 24px;
+    }
+}
+
+@media (max-width: 420px){
+    .stat-box p{
+        font-size: 0.62rem;
+        letter-spacing: 1px;
+    }
+
+    .stat-box h2{
+        font-size: 2rem;
+    }
+
+    .grid-area{
+        gap: 8px;
+    }
+
+    .node{
+        min-height: 64px;
+        border-radius: 14px;
+    }
+}
+
+.menu-floating-btn{
+    position: absolute;
+    top: 16px;
+    left: 18px;
+    z-index: 120;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: white;
+    text-decoration: none;
+    font-family: 'Oswald';
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    opacity: 0.95;
+    transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-floating-btn:hover{
+    background: rgba(255,255,255,0.16);
+    transform: translateY(-1px);
+}
+
+.menu-floating-btn:active{
+    transform: translateY(1px);
+}
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <a href="Portada.html" class="menu-floating-btn" aria-label="Volver al menú principal">← Menú</a>
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="overlay">
+            <div style="background: rgba(16, 185, 129, 0.1); padding: 20px; border-radius: 50%; margin-bottom: 20px;">
+                <i data-lucide="Zap" style="width: 40px; height: 40px; color: var(--emerald);"></i>
+            </div>
+            <h1 style="font-family: 'Bebas Neue'; font-size: 3.5rem; line-height: 1;">REFLEX <span style="color:var(--emerald)">2026</span></h1>
+<p style="opacity:0.7; margin-top: 10px;">Entrenamiento de elite: Toca los nodos de energía antes de que desaparezcan.</p>
+<button class="btn-action" onclick="startGame()">INICIAR DRILL</button>
+<a href="Portada.html" class="back-link">← VOLVER A MINIJUEGOS</a>
+        </div>
+
+        <!-- Pantalla de Fin -->
+        <div id="game-over-screen" class="overlay hidden">
+    <h1 style="font-family: 'Bebas Neue'; font-size: 4rem; color: var(--red-fail)">TIEMPO AGOTADO</h1>
+    <p id="final-stats" style="opacity:0.8">Puntaje de Reacción: 0</p>
+    <button class="btn-action" style="background: white; color: var(--slate-950);" onclick="startGame()">REINTENTAR</button>
+    <a href="Portada.html" class="back-link">← VOLVER AL MENÚ PRINCIPAL</a>
+</div>
+
+        <!-- HUD -->
+        <div class="hud">
+            <div class="stat-box">
+                <p>REACCIÓN</p>
+                <h2 id="score-val">0</h2>
+            </div>
+            <div class="stat-box" style="text-align: right;">
+                <p>MÁXIMA</p>
+                <h2 id="best-val" style="font-size: 2rem; color: var(--gold);">0</h2>
+            </div>
+        </div>
+
+        <!-- Barra de Salud/Energía -->
+        <div class="health-bar-wrapper">
+            <div id="health-fill"></div>
+        </div>
+
+        <!-- Grilla de Nodos -->
+        <div class="grid-area" id="grid">
+            <!-- 12 Nodos generados por JS -->
+        </div>
+
+        <div class="footer">
+            <p>SISTEMA DE ENTRENAMIENTO BIOMÉTRICO • NIVEL <span id="lvl-display">1</span></p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let score = 0;
+        let health = 100;
+        let bestScore = localStorage.getItem('reflex_best') || 0;
+        let gameActive = false;
+        let spawnRate = 1000;
+        let gameTimer;
+        let healthTimer;
+
+        const grid = document.getElementById('grid');
+        const scoreVal = document.getElementById('score-val');
+        const bestVal = document.getElementById('best-val');
+        const healthFill = document.getElementById('health-fill');
+        const levelDisplay = document.getElementById('lvl-display');
+
+        bestVal.innerText = bestScore;
+
+        // Crear Grilla
+        for (let i = 0; i < 12; i++) {
+            const node = document.createElement('div');
+            node.className = 'node';
+            node.dataset.index = i;
+            node.onclick = () => handleNodeClick(i);
+            grid.appendChild(node);
+        }
+
+        function startGame() {
+    score = 0;
+    health = 100;
+    spawnRate = 1000;
+    scoreVal.innerText = "0";
+    levelDisplay.innerText = "1";
+    updateHealthUI();
+
+    clearTimeout(gameTimer);
+    clearInterval(healthTimer);
+    clearAllNodes();
+    
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+    
+    gameActive = true;
+    gameLoop();
+    startHealthDrain();
+}
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            spawnTarget();
+            
+            // Aumentar velocidad progresivamente
+            const nextTick = Math.max(400, spawnRate - (score * 2));
+            gameTimer = setTimeout(gameLoop, nextTick);
+        }
+
+        function spawnTarget() {
+            const nodes = document.querySelectorAll('.node');
+            const emptyNodes = Array.from(nodes).filter(n => !n.querySelector('.target'));
+            
+            if (emptyNodes.length > 0) {
+                const randomNode = emptyNodes[Math.floor(Math.random() * emptyNodes.length)];
+                const target = document.createElement('div');
+                target.className = 'target';
+                randomNode.appendChild(target);
+
+                // El target desaparece solo si no se toca
+                setTimeout(() => {
+                    if (target.parentNode === randomNode) {
+                        target.remove();
+                        decreaseHealth(8); // Penalización por no tocar
+                    }
+                }, 1500 - (score * 5));
+            }
+        }
+
+        function handleNodeClick(index) {
+            if (!gameActive) return;
+            const node = document.querySelector(`.node[data-index="${index}"]`);
+            const target = node.querySelector('.target');
+
+            if (target) {
+                // ÉXITO
+                target.remove();
+                score++;
+                health = Math.min(100, health + 5); // Recupera un poco de vida
+                scoreVal.innerText = score;
+                levelDisplay.innerText = Math.floor(score/10) + 1;
+                
+                // Efecto Visual
+                const effect = document.createElement('div');
+                effect.className = 'hit-effect';
+                node.appendChild(effect);
+                setTimeout(() => effect.remove(), 400);
+
+                updateHealthUI();
+            } else {
+                // FALLO (Click en vacío)
+                decreaseHealth(10);
+                document.getElementById('game-container').classList.add('shake');
+                setTimeout(() => document.getElementById('game-container').classList.remove('shake'), 300);
+            }
+        }
+
+        function startHealthDrain() {
+            healthTimer = setInterval(() => {
+                if (gameActive) {
+                    decreaseHealth(1.5); // Drenaje constante de tiempo
+                }
+            }, 100);
+        }
+
+        function decreaseHealth(amount) {
+            health -= amount;
+            if (health <= 0) {
+                health = 0;
+                endGame();
+            }
+            updateHealthUI();
+        }
+
+        function updateHealthUI() {
+            healthFill.style.width = health + '%';
+            if (health < 30) healthFill.style.background = 'var(--red-fail)';
+            else healthFill.style.background = 'linear-gradient(90deg, var(--emerald), var(--gold))';
+        }
+
+        function clearAllNodes() {
+            document.querySelectorAll('.target').forEach(t => t.remove());
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearTimeout(gameTimer);
+            clearInterval(healthTimer);
+            
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('reflex_best', bestScore);
+                bestVal.innerText = bestScore;
+            }
+
+            document.getElementById('final-stats').innerText = `PUNTAJE DE REACCIÓN: ${score}`;
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape') {
+        window.location.href = 'Portada.html';
+    }
+});
+
+    </script>
+</body>
+</html>

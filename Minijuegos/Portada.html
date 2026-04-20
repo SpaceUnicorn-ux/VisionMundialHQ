@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Mundial HQ - Fan Zone Games</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;700&family=Source+Sans+3:wght@400;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.4);
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --gold: #fbbf24;
+            --white: #ffffff;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--slate-950);
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Fondo Decorativo */
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% -20%, #064e3b, transparent);
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        header {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(3rem, 10vw, 5rem);
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
+        header h1 span { color: var(--emerald); }
+
+        header p {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            opacity: 0.6;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .back-app-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: white;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+    transition: var(--transition);
+}
+
+.back-app-btn:hover{
+    background: var(--emerald);
+    border-color: var(--emerald);
+    transform: translateY(-2px);
+}
+
+        /* GRID DE JUEGOS ACTUALIZADO A 2 COLUMNAS */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Forzado a 2 columnas */
+            gap: 25px;
+            max-width: 1000px; /* Ajustado para mejor balance visual en pares */
+            margin: 0 auto;
+            padding: 20px 40px 60px;
+            width: 100%;
+        }
+
+        .game-card {
+            position: relative;
+            background: var(--slate-900);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            overflow: hidden;
+            text-decoration: none;
+            color: white;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Efecto Hover en Card */
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--emerald);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px var(--emerald-glow);
+        }
+
+        /* Portada/Thumbnail Actualizada */
+        .card-image {
+            height: 220px; /* Un poco más alto para las cartas anchas */
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Decoración de la imagen */
+        .card-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, var(--slate-900), transparent 70%), 
+                        linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+            z-index: 1;
+        }
+
+        .card-content {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-content h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .card-content p {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .play-tag {
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--emerald);
+            font-weight: 900;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .game-card:hover .play-tag {
+            color: var(--gold);
+        }
+
+        /* Badge de Categoría */
+        .category-badge {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 10;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 0.4;
+            font-size: 0.8rem;
+        }
+
+@media (max-width: 800px) {
+    .games-grid { 
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+
+    .card-image{
+        height: 190px;
+    }
+
+    .card-content{
+        padding: 20px;
+    }
+
+    .card-content h3{
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 520px){
+    header{
+        padding: 28px 16px;
+    }
+
+    header p{
+        letter-spacing: 2px;
+        font-size: 0.78rem;
+    }
+
+    .games-grid{
+        gap: 18px;
+        padding: 16px;
+    }
+
+    .game-card{
+        border-radius: 24px;
+    }
+
+    .card-image{
+        height: 170px;
+    }
+
+    .card-content{
+        padding: 18px;
+    }
+
+    footer{
+        padding: 24px 16px 34px;
+        font-size: 0.72rem;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+<header>
+    <p>FIFA WORLD CUP 2026 • OFFICIAL TRAINING</p>
+    <h1>FAN ZONE<span> HQ</span></h1>
+    <div style="margin-top: 18px;">
+        <a href="../index.html" class="back-app-btn">← VOLVER A LA APP</a>
+    </div>
+</header>
+
+    <main class="games-grid">
+        
+        <!-- JUEGO 1: STRIKER -->
+        <a href="Minijuego1.html" class="game-card">
+            <span class="category-badge">Precisión</span>
+            <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop');">
+            </div>
+            <div class="card-content">
+                <h3>Striker 2026 Pro</h3>
+                <p>Domina los tiros penales con el simulador de precisión biométrica. ¿Podrás anotar 10 seguidos?</p>
+                <div class="play-tag">Jugar Ahora <i data-lucide="play-circle" style="width: 16px;"></i></div>
+            </div>
+        </a>
+
+        <!-- JUEGO 2: REFLEX -->
+        <a href="Minijuego2.html" class="game-card">
+            <span class="category-badge">Reflejos</span>
+            <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=800&auto=format&fit=crop');">
+            </div>
+            <div class="card-content">
+                <h3>Reflex: Pro Drill</h3>
+                <h4 style="font-size: 0.7rem; color: var(--gold); margin-bottom: 5px;">MODO ÉLITE</h4>
+                <p>Toca los nodos de energía antes de que se agoten. Entrenamiento de alta velocidad para porteros.</p>
+                <div class="play-tag">Jugar Ahora <i data-lucide="play-circle" style="width: 16px;"></i></div>
+            </div>
+        </a>
+
+        <!-- JUEGO 3: TACTIC -->
+        <a href="Minijuego3.html" class="game-card">
+            <span class="category-badge">Conducción</span>
+            <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1510566337590-2fc1f21d0faa?q=80&w=800&auto=format&fit=crop');">
+            </div>
+            <div class="card-content">
+                <h3>Tactic: Dribble</h3>
+                <p>Esquiva las defensas rojas en un simulador de conducción de balón infinito. Rompe récords de distancia.</p>
+                <div class="play-tag">Jugar Ahora <i data-lucide="play-circle" style="width: 16px;"></i></div>
+            </div>
+        </a>
+
+        <!-- JUEGO 4: MATCH -->
+        <a href="Minijuego4.html" class="game-card">
+            <span class="category-badge">Estrategia</span>
+            <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1556056504-5c7696c4c28d?q=80&w=800&auto=format&fit=crop');">
+            </div>
+            <div class="card-content">
+                <h3>Match: Tactic Board</h3>
+                <p>Alinea iconos tácticos en este desafío mental. Planea tus movimientos para vaciar la pizarra.</p>
+                <div class="play-tag">Jugar Ahora <i data-lucide="play-circle" style="width: 16px;"></i></div>
+            </div>
+        </a>
+
+    </main>
+
+<footer>
+    © 2026 VISION MUNDIAL HQ • FAN ZONE GAMES CENTER
+</footer>
+
+    <script>
+        // Inicializar Iconos
+        lucide.createIcons();
+    </script>
+</body>
+</html>

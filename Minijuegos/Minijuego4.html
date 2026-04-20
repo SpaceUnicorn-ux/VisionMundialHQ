@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match 2026: Tactic Board - FIFA Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;700&family=Source+Sans+3:wght@400;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.4);
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --gold: #fbbf24;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: #050a18;
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 90vh;
+            max-height: 850px;
+            background: radial-gradient(circle at top, var(--slate-900), var(--slate-950));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.8);
+            padding: 20px;
+        }
+
+        /* HUD */
+        .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 44px 10px 10px 10px;
+    margin-bottom: 10px;
+}
+
+        .stat-box p { font-family: 'Oswald'; font-size: 0.7rem; letter-spacing: 2px; opacity: 0.6; text-transform: uppercase; }
+        .stat-box h2 { font-family: 'Bebas Neue'; font-size: 2.5rem; color: var(--emerald); line-height: 1; }
+
+        /* TABLERO DE JUEGO */
+        #board {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+.cell {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    user-select: none;
+}
+
+        .cell:active { transform: scale(0.9); }
+        .cell.selected {
+            background: var(--emerald-glow);
+            border: 1px solid var(--emerald);
+            box-shadow: 0 0 15px var(--emerald-glow);
+        }
+
+        .icon-item {
+            width: 70%;
+            height: 70%;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        /* ANIMACIONES */
+        @keyframes matchDestroy {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.3); filter: brightness(2); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .match-anim { animation: matchDestroy 0.4s ease-out forwards; }
+
+        /* OVERLAYS */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 40px;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .hidden { display: none !important; }
+
+        .btn-action {
+            background: var(--emerald);
+            color: white;
+            padding: 18px 45px;
+            border-radius: 15px;
+            font-family: 'Oswald';
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-top: 25px;
+            text-transform: uppercase;
+        }
+
+        .footer { text-align: center; padding-top: 15px; opacity: 0.4; font-size: 0.65rem; font-family: 'Oswald'; letter-spacing: 1px; }
+
+.back-link{
+    margin-top: 16px;
+    color: white;
+    text-decoration: none;
+    font-family: 'Oswald';
+    letter-spacing: 1px;
+    opacity: 0.85;
+}
+
+@media (max-width: 768px){
+    body{
+        align-items: stretch;
+        overflow: auto;
+    }
+
+    #game-container{
+        width: 100%;
+        max-width: 100%;
+        min-height: 100dvh;
+        height: auto;
+        max-height: none;
+        border-radius: 0;
+        padding: 14px;
+    }
+
+    .hud{
+    gap: 8px;
+    padding: calc(48px + env(safe-area-inset-top)) 4px 6px 4px;
+}
+
+.menu-floating-btn{
+    top: calc(10px + env(safe-area-inset-top));
+    left: 12px;
+    font-size: 0.82rem;
+    padding: 8px 12px;
+}
+
+    .stat-box h2{
+        font-size: 1.9rem;
+    }
+
+    #board{
+        gap: 4px;
+        padding: 8px;
+    }
+
+    .cell{
+        border-radius: 10px;
+        min-height: 44px;
+    }
+
+    .overlay{
+        border-radius: 0;
+        padding: 24px;
+    }
+}
+
+@media (max-width: 420px){
+    .stat-box p{
+        font-size: 0.58rem;
+        letter-spacing: 1px;
+    }
+
+    .stat-box h2{
+        font-size: 1.55rem;
+    }
+
+    #board{
+        gap: 3px;
+        padding: 6px;
+    }
+
+    .cell{
+        min-height: 38px;
+        border-radius: 8px;
+    }
+}
+
+    .menu-floating-btn{
+    position: absolute;
+    top: 16px;
+    left: 18px;
+    z-index: 120;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: white;
+    text-decoration: none;
+    font-family: 'Oswald';
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    opacity: 0.95;
+    transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-floating-btn:hover{
+    background: rgba(255,255,255,0.16);
+    transform: translateY(-1px);
+}
+
+.menu-floating-btn:active{
+    transform: translateY(1px);
+}
+    
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <a href="Portada.html" class="menu-floating-btn" aria-label="Volver al menú principal">← Menú</a>
+        <!-- Pantallas -->
+        <div id="start-screen" class="overlay">
+            <div style="background: rgba(16, 185, 129, 0.1); padding: 25px; border-radius: 50%; margin-bottom: 20px;">
+                <i data-lucide="layout-grid" style="width: 50px; height: 50px; color: var(--emerald);"></i>
+            </div>
+            <h1 style="font-family: 'Bebas Neue'; font-size: 3.5rem; line-height: 1;">MATCH <span style="color:var(--emerald)">2026</span></h1>
+<p style="opacity:0.7; margin-top: 10px;">Alinea 3 iconos iguales para generar puntos. ¡Tienes 25 movimientos!</p>
+<button class="btn-action" onclick="startGame()">INICIAR PIZARRA</button>
+<a href="Portada.html" class="back-link">← VOLVER A MINIJUEGOS</a>
+        </div>
+
+        <div id="game-over-screen" class="overlay hidden">
+    <h1 style="font-family: 'Bebas Neue'; font-size: 4rem; color: var(--gold)">FINALIZADO</h1>
+    <p id="final-stats">Puntuación Táctica: 0</p>
+    <button class="btn-action" style="background: white; color: black;" onclick="startGame()">REINTENTAR</button>
+    <a href="Portada.html" class="back-link">← VOLVER AL MENÚ PRINCIPAL</a>
+</div>
+
+        <!-- HUD -->
+        <div class="hud">
+            <div class="stat-box">
+                <p>PUNTOS</p>
+                <h2 id="score-val">0</h2>
+            </div>
+            <div class="stat-box" style="text-align: center;">
+                <p>MOVIMIENTOS</p>
+                <h2 id="moves-val" style="color: var(--gold)">25</h2>
+            </div>
+            <div class="stat-box" style="text-align: right;">
+                <p>RÉCORD</p>
+                <h2 id="best-val" style="font-size: 1.8rem;">0</h2>
+            </div>
+        </div>
+
+        <!-- Tablero -->
+        <div id="board"></div>
+
+        <div class="footer">
+            PIZARRA TÁCTICA HOLOGRÁFICA • FIFA WORLD CUP 2026 HQ
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Iconos (Lucide)
+        const ICONS = ['trophy', 'shirt', 'footprints', 'award', 'shield', 'zap'];
+        const ROWS = 8;
+        const COLS = 7;
+        
+        let score = 0;
+        let moves = 25;
+        let bestScore = localStorage.getItem('match_best') || 0;
+        let boardData = [];
+        let selectedCell = null;
+        let isProcessing = false;
+
+        const boardEl = document.getElementById('board');
+        const scoreVal = document.getElementById('score-val');
+        const movesVal = document.getElementById('moves-val');
+        const bestVal = document.getElementById('best-val');
+
+        bestVal.innerText = bestScore;
+
+        function startGame() {
+    score = 0;
+    moves = 25;
+    isProcessing = false;
+    selectedCell = null;
+    updateHUD();
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+    createBoard();
+}
+
+        function createBoard() {
+            boardEl.innerHTML = '';
+            boardData = [];
+            for (let r = 0; r < ROWS; r++) {
+                boardData[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    const icon = getRandomIcon();
+                    boardData[r][c] = icon;
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    cell.onclick = () => onCellClick(r, c);
+                    
+                    const iconEl = createIconElement(icon);
+                    cell.appendChild(iconEl);
+                    boardEl.appendChild(cell);
+                }
+            }
+            // Limpiar matches iniciales sin puntuar
+            checkMatches(false);
+            lucide.createIcons();
+        }
+
+        function getRandomIcon() {
+            return ICONS[Math.floor(Math.random() * ICONS.length)];
+        }
+
+        function createIconElement(name) {
+            const i = document.createElement('i');
+            i.dataset.lucide = name;
+            i.className = 'icon-item';
+            i.style.color = name === 'trophy' ? 'var(--gold)' : 'var(--emerald)';
+            return i;
+        }
+
+        function onCellClick(r, c) {
+            if (isProcessing || moves <= 0) return;
+
+            const cell = document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+
+            if (!selectedCell) {
+                selectedCell = { r, c, el: cell };
+                cell.classList.add('selected');
+            } else {
+                const prev = selectedCell;
+                const dist = Math.abs(prev.r - r) + Math.abs(prev.c - c);
+
+                if (dist === 1) {
+                    swapCells(prev.r, prev.c, r, c);
+                }
+
+                prev.el.classList.remove('selected');
+                selectedCell = null;
+            }
+        }
+
+        async function swapCells(r1, c1, r2, c2, isUndo = false) {
+            isProcessing = true;
+            
+            // Swap Data
+            const temp = boardData[r1][c1];
+            boardData[r1][c1] = boardData[r2][c2];
+            boardData[r2][c2] = temp;
+
+            renderBoard();
+
+            if (!isUndo) {
+                const hasMatches = await checkMatches(true);
+                if (!hasMatches) {
+                    // Si no hubo match, revertir swap
+                    setTimeout(() => swapCells(r1, c1, r2, c2, true), 300);
+                } else {
+                    moves--;
+                    updateHUD();
+                    if (moves <= 0) endGame();
+                }
+            }
+            
+            if (isUndo || moves > 0) isProcessing = false;
+        }
+
+        async function checkMatches(shouldScore) {
+            let matches = [];
+
+            // Horizontal
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS - 2; c++) {
+                    const type = boardData[r][c];
+                    if (type && type === boardData[r][c+1] && type === boardData[r][c+2]) {
+                        matches.push({r, c}, {r, c:c+1}, {r, c:c+2});
+                    }
+                }
+            }
+
+            // Vertical
+            for (let c = 0; c < COLS; c++) {
+                for (let r = 0; r < ROWS - 2; r++) {
+                    const type = boardData[r][c];
+                    if (type && type === boardData[r+1][c] && type === boardData[r+2][c]) {
+                        matches.push({r, c}, {r:r+1, c}, {r:r+2, c});
+                    }
+                }
+            }
+
+            if (matches.length > 0) {
+                // Eliminar duplicados
+                const uniqueMatches = [...new Set(matches.map(m => `${m.r},${m.c}`))];
+                
+                if (shouldScore) {
+                    score += uniqueMatches.length * 10;
+                    updateHUD();
+                    
+                    // Animación de destrucción
+                    uniqueMatches.forEach(m => {
+                        const [r, c] = m.split(',').map(Number);
+                        const cell = document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+                        cell.firstChild.classList.add('match-anim');
+                    });
+
+                    await new Promise(r => setTimeout(r, 400));
+                }
+
+                uniqueMatches.forEach(m => {
+                    const [r, c] = m.split(',').map(Number);
+                    boardData[r][c] = null;
+                });
+
+                fillBoard();
+                renderBoard();
+                
+                // Recursivo para cascadas
+                await new Promise(r => setTimeout(r, 300));
+                await checkMatches(shouldScore);
+                return true;
+            }
+            return false;
+        }
+
+        function fillBoard() {
+            for (let c = 0; c < COLS; c++) {
+                for (let r = ROWS - 1; r >= 0; r--) {
+                    if (boardData[r][c] === null) {
+                        for (let rAbove = r - 1; rAbove >= 0; rAbove--) {
+                            if (boardData[rAbove][c] !== null) {
+                                boardData[r][c] = boardData[rAbove][c];
+                                boardData[rAbove][c] = null;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Rellenar arriba
+                for (let r = 0; r < ROWS; r++) {
+                    if (boardData[r][c] === null) {
+                        boardData[r][c] = getRandomIcon();
+                    }
+                }
+            }
+        }
+
+        function renderBoard() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+                    cell.innerHTML = '';
+                    if (boardData[r][c]) {
+                        cell.appendChild(createIconElement(boardData[r][c]));
+                    }
+                }
+            }
+            lucide.createIcons();
+        }
+
+        function updateHUD() {
+            scoreVal.innerText = score;
+            movesVal.innerText = moves;
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('match_best', bestScore);
+                bestVal.innerText = bestScore;
+            }
+        }
+
+        function endGame() {
+    isProcessing = true;
+    selectedCell = null;
+    document.getElementById('final-stats').innerText = `PUNTUACIÓN TÁCTICA: ${score}`;
+    document.getElementById('game-over-screen').classList.remove('hidden');
+}
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape') {
+        window.location.href = 'Portada.html';
+    }
+});
+
+    </script>
+</body>
+</html>

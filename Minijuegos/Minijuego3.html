@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactic 2026: Pro Dribble - FIFA Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;700&family=Source+Sans+3:wght@400;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.6);
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --red-fail: #ef4444;
+            --gold: #fbbf24;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: #050a18;
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 95vw;
+            max-width: 450px;
+            height: 90vh;
+            max-height: 800px;
+            background: radial-gradient(circle at top, var(--slate-900), var(--slate-950));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.8);
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        /* HUD */
+        .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-top: 44px;
+    z-index: 50;
+}
+
+        .stat-box p { font-family: 'Oswald'; font-size: 0.7rem; letter-spacing: 2px; opacity: 0.6; text-transform: uppercase; }
+        .stat-box h2 { font-family: 'Bebas Neue'; font-size: 2.8rem; color: var(--emerald); line-height: 1; }
+
+        /* ZONA DE JUEGO */
+        #pitch {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            touch-action: none; /* Importante para móvil */
+        }
+
+        /* Líneas de campo decorativas */
+        .pitch-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: rgba(16, 185, 129, 0.1);
+            left: 0;
+        }
+
+        /* PERSONAJE (EL BALÓN) */
+        #player {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            background: var(--emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 25px var(--emerald-glow), inset 0 0 10px white;
+            z-index: 100;
+            cursor: pointer;
+            transform: translate(-50%, -50%); /* Centrar respecto a la coordenada */
+            pointer-events: none; /* El contenedor detecta el mouse */
+        }
+
+        /* OBSTÁCULOS */
+        .obstacle {
+            position: absolute;
+            width: 100px;
+            height: 15px;
+            background: linear-gradient(90deg, var(--red-fail), #991b1b);
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+            z-index: 10;
+        }
+
+        /* COLECCIONABLES */
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--gold);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            box-shadow: 0 0 15px var(--gold);
+            z-index: 10;
+        }
+
+        /* OVERLAYS */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 40px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .hidden { display: none !important; }
+
+        .btn-action {
+            background: var(--emerald);
+            color: white;
+            padding: 18px 45px;
+            border-radius: 15px;
+            font-family: 'Oswald';
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-top: 25px;
+            text-transform: uppercase;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .footer { text-align: center; padding-top: 15px; }
+        .footer p { font-size: 0.65rem; opacity: 0.4; letter-spacing: 1px; font-family: 'Oswald'; }
+
+.back-link{
+    margin-top: 16px;
+    color: white;
+    text-decoration: none;
+    font-family: 'Oswald';
+    letter-spacing: 1px;
+    opacity: 0.85;
+}
+
+@media (max-width: 768px){
+    body{
+        align-items: stretch;
+        overflow: auto;
+    }
+
+    #game-container{
+        width: 100%;
+        max-width: 100%;
+        min-height: 100dvh;
+        height: auto;
+        max-height: none;
+        border-radius: 0;
+        padding: 16px;
+    }
+
+    .hud{
+    margin-bottom: 12px;
+    padding-top: calc(48px + env(safe-area-inset-top));
+}
+
+.menu-floating-btn{
+    top: calc(10px + env(safe-area-inset-top));
+    left: 12px;
+    font-size: 0.82rem;
+    padding: 8px 12px;
+}
+
+    .stat-box h2{
+        font-size: 2.2rem;
+    }
+
+    #pitch{
+        min-height: 58vh;
+        border-radius: 18px;
+    }
+
+    .overlay{
+        border-radius: 0;
+        padding: 24px;
+    }
+}
+
+@media (max-width: 420px){
+    .stat-box p{
+        font-size: 0.62rem;
+        letter-spacing: 1px;
+    }
+
+    .stat-box h2{
+        font-size: 1.9rem;
+    }
+
+    #player{
+        width: 30px;
+        height: 30px;
+    }
+}
+
+   .menu-floating-btn{
+    position: absolute;
+    top: 16px;
+    left: 18px;
+    z-index: 220;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: white;
+    text-decoration: none;
+    font-family: 'Oswald';
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    opacity: 0.95;
+    transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-floating-btn:hover{
+    background: rgba(255,255,255,0.16);
+    transform: translateY(-1px);
+}
+
+.menu-floating-btn:active{
+    transform: translateY(1px);
+}
+   
+   </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <a href="Portada.html" class="menu-floating-btn" aria-label="Volver al menú principal">← Menú</a>
+        <!-- Pantallas -->
+        <div id="start-screen" class="overlay">
+            <h1 style="font-family: 'Bebas Neue'; font-size: 3.5rem; line-height: 1;">TACTIC <span style="color:var(--emerald)">2026</span></h1>
+<p style="opacity:0.7; margin-top: 10px;">Controla el balón. Esquiva las defensas rojas y recoge las estrellas doradas.</p>
+<button class="btn-action" onclick="startGame()">INICIAR DRIBBLE</button>
+<a href="Portada.html" class="back-link">← VOLVER A MINIJUEGOS</a>
+        </div>
+
+<div id="game-over-screen" class="overlay hidden">
+    <h1 style="font-family: 'Bebas Neue'; font-size: 4rem; color: var(--red-fail)">COLISIÓN</h1>
+    <p id="final-stats">Distancia: 0m</p>
+    <button class="btn-action" style="background: white; color: black;" onclick="startGame()">REINTENTAR</button>
+    <a href="Portada.html" class="back-link">← VOLVER AL MENÚ PRINCIPAL</a>
+</div>
+
+        <!-- HUD -->
+        <div class="hud">
+            <div class="stat-box">
+                <p>DISTANCIA</p>
+                <h2 id="dist-val">0</h2>
+            </div>
+            <div class="stat-box" style="text-align: right;">
+                <p>BEST</p>
+                <h2 id="best-val" style="font-size: 1.8rem; color: var(--gold);">0</h2>
+            </div>
+        </div>
+
+        <!-- Escenario -->
+        <div id="pitch">
+            <!-- Líneas de fondo -->
+            <div class="pitch-line" style="top: 20%"></div>
+            <div class="pitch-line" style="top: 40%"></div>
+            <div class="pitch-line" style="top: 60%"></div>
+            <div class="pitch-line" style="top: 80%"></div>
+            
+            <div id="player"></div>
+        </div>
+
+        <div class="footer">
+            <p>FIFA ELITE TRAINING SYSTEM • NIVEL <span id="lvl-display">1</span></p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Variables de Juego
+        let gameActive = false;
+        let distance = 0;
+        let bestScore = localStorage.getItem('tactical_best') || 0;
+        let speed = 4;
+        let playerX = 200;
+        let playerY = 0;
+        let obstacles = [];
+        let stars = [];
+        let lastSpawnTime = 0;
+        
+        const pitch = document.getElementById('pitch');
+        const player = document.getElementById('player');
+        const distVal = document.getElementById('dist-val');
+        const bestVal = document.getElementById('best-val');
+        const lvlDisplay = document.getElementById('lvl-display');
+
+        bestVal.innerText = bestScore + "m";
+
+        // Inicializar posición del jugador
+        function initPlayer() {
+            const rect = pitch.getBoundingClientRect();
+            playerX = rect.width / 2;
+            playerY = rect.height * 0.8; // Posición al 80% del alto
+            updatePlayerPos();
+        }
+
+        function updatePlayerPos() {
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+        }
+
+        // Control Mouse / Touch
+        function handleMove(e) {
+            if (!gameActive) return;
+            const rect = pitch.getBoundingClientRect();
+            let clientX;
+            
+            if (e.type === 'touchmove') {
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+
+            let x = clientX - rect.left;
+            // Limitar dentro del campo
+            x = Math.max(20, Math.min(x, rect.width - 20));
+            playerX = x;
+            updatePlayerPos();
+        }
+
+        pitch.addEventListener('mousemove', handleMove);
+        pitch.addEventListener('touchmove', (e) => {
+            handleMove(e);
+            e.preventDefault();
+        }, { passive: false });
+
+        function startGame() {
+    gameActive = true;
+    distance = 0;
+    speed = 4;
+    lastSpawnTime = 0;
+
+    obstacles.forEach(o => o.el.remove());
+    stars.forEach(s => s.el.remove());
+    obstacles = [];
+    stars = [];
+
+    distVal.innerText = "0m";
+    lvlDisplay.innerText = "1";
+    player.style.boxShadow = "0 0 25px var(--emerald-glow), inset 0 0 10px white;";
+    
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+    
+    initPlayer();
+    requestAnimationFrame(gameLoop);
+}
+
+        function gameLoop(timestamp) {
+            if (!gameActive) return;
+
+            distance += 0.15;
+            distVal.innerText = Math.floor(distance) + "m";
+            speed = 4 + (distance / 150);
+            lvlDisplay.innerText = Math.floor(distance / 100) + 1;
+
+            // Generación controlada (cada 1.2 segundos aprox, según velocidad)
+            if (timestamp - lastSpawnTime > (1500 / (speed/4))) {
+                spawnElements();
+                lastSpawnTime = timestamp;
+            }
+
+            updateObjects();
+            checkCollisions();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnElements() {
+            const rect = pitch.getBoundingClientRect();
+            // Sistema de carriles: 0, 1, 2
+            const laneWidth = rect.width / 3;
+            const lane = Math.floor(Math.random() * 3);
+            const xPos = (lane * laneWidth) + (laneWidth / 2) - 50;
+
+            if (Math.random() > 0.3) {
+                // Generar Obstáculo
+                const el = document.createElement('div');
+                el.className = 'obstacle';
+                el.style.left = xPos + 'px';
+                el.style.top = '-50px';
+                pitch.appendChild(el);
+                obstacles.push({ el, x: xPos, y: -50, w: 100, h: 15 });
+            } else {
+                // Generar Estrella
+                const el = document.createElement('div');
+                el.className = 'star';
+                const sX = Math.random() * (rect.width - 30) + 15;
+                el.style.left = sX + 'px';
+                el.style.top = '-50px';
+                pitch.appendChild(el);
+                stars.push({ el, x: sX, y: -50, w: 20, h: 20 });
+            }
+        }
+
+        function updateObjects() {
+            const h = pitch.clientHeight;
+
+            obstacles.forEach((o, i) => {
+                o.y += speed;
+                o.el.style.top = o.y + 'px';
+                if (o.y > h) {
+                    o.el.remove();
+                    obstacles.splice(i, 1);
+                }
+            });
+
+            stars.forEach((s, i) => {
+                s.y += speed;
+                s.el.style.top = s.y + 'px';
+                if (s.y > h) {
+                    s.el.remove();
+                    stars.splice(i, 1);
+                }
+            });
+        }
+
+        function checkCollisions() {
+            // El hit box del jugador es un poco más pequeño para ser justo (15px radio)
+            const pX = playerX;
+            const pY = playerY;
+
+            obstacles.forEach(o => {
+                if (pX + 15 > o.x && pX - 15 < o.x + o.w &&
+                    pY + 15 > o.y && pY - 15 < o.y + o.h) {
+                    endGame();
+                }
+            });
+
+            stars.forEach((s, i) => {
+                if (pX + 15 > s.x && pX - 15 < s.x + s.w &&
+                    pY + 15 > s.y && pY - 15 < s.y + s.h) {
+                    distance += 25; // Bonus de distancia
+                    s.el.remove();
+                    stars.splice(i, 1);
+                    // Efecto visual
+                    player.style.boxShadow = "0 0 50px var(--gold)";
+                    setTimeout(() => player.style.boxShadow = "0 0 25px var(--emerald-glow), inset 0 0 10px white", 200);
+                }
+            });
+        }
+
+        function endGame() {
+            gameActive = false;
+            if (distance > bestScore) {
+                bestScore = Math.floor(distance);
+                localStorage.setItem('tactical_best', bestScore);
+                bestVal.innerText = bestScore + "m";
+            }
+            document.getElementById('final-stats').innerText = `DISTANCIA: ${Math.floor(distance)}m`;
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+
+        // Ajuste inicial al cargar
+        window.onload = initPlayer;
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape') {
+        window.location.href = 'Portada.html';
+    }
+});
+
+    </script>
+</body>
+</html>
